@@ -27,9 +27,8 @@ function drawAnalysisMethodOption(method : string){
 }
 
 function drawAnalysisMethods(dropdown : HTMLElement){
-  dropdown.appendChild(drawAnalysisMethodOption("Raster Analysis"));
-  dropdown.appendChild(drawAnalysisMethodOption("Network Analysis"));
-  dropdown.appendChild(drawAnalysisMethodOption("Analisis Medan & Hidrologi"));
+  dropdown.appendChild(drawAnalysisMethodOption("Raster Algebra"));
+  dropdown.appendChild(drawAnalysisMethodOption("Multi Criteria Evaluation"));
 }
 
 

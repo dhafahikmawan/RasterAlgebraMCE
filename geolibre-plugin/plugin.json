@@ -1,6 +1,6 @@
 {
-  "id": "spatio-tha",
-  "name": "Spatio Terrain and Hydrological Analysis",
+  "id": "spatio-raster-algebra-mce",
+  "name": "Spatio Raster Algebra and MCE",
   "version": "0.1.0",
   "entry": "dist/index.js",
   "description": "A starter GeoLibre plugin bundle with a MapLibre control.",
