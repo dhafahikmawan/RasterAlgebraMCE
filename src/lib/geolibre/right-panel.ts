@@ -1,4 +1,6 @@
 import type { GeoLibreAppAPI, GeoLibreControl } from "./host-api";
+import { createRasterAlgebraLayer } from "../utils/SpatioProcessing/raster-algebra";
+import { createMCELayer } from "../utils/SpatioProcessing/mce";
 
 /**
  * Demonstration of the GeoLibre right-sidebar panel host API.
@@ -33,7 +35,21 @@ function drawAnalysisMethods(dropdown : HTMLElement){
 
 
 function loadMethodForm(wrapper: HTMLElement, method : string){
+  removeAllChildElements(wrapper);
+  if(method === "Raster Algebra"){
+    
+  }
+  else if(method === "Multi Criteria Evaluation"){
 
+  }
+}
+
+function removeAllChildElements(parent:  HTMLElement){
+  if(!parent) return;
+
+  while(parent.firstChild){
+    parent.removeChild(parent.firstChild);
+  }
 }
 
 /**
