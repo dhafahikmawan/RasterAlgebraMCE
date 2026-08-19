@@ -1,6 +1,6 @@
 import type { GeoLibreAppAPI, GeoLibreControl } from "./host-api";
-import { createRasterAlgebraLayer } from "../utils/SpatioProcessing/raster-algebra";
-import { createMCELayer } from "../utils/SpatioProcessing/mce";
+import { createRasterAlgebraLayer } from "../SpatioProcessing/raster-algebra";
+import { createMCELayer } from "../SpatioProcessing/mce";
 
 /**
  * Demonstration of the GeoLibre right-sidebar panel host API.
