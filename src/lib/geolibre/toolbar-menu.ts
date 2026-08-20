@@ -1,6 +1,6 @@
 import { FLOATING_PANEL_ID } from "./floating-panel";
-import type { GeoLibreAppAPI, GeoLibreControl } from "./host-api";
-import { RIGHT_PANEL_ID } from "./right-panel";
+import type { GeoLibreAppAPI, GeoLibreControl, GeoLibreToolbarMenuItem } from "./host-api";
+import { RIGHT_PANEL_ID, BASE_METHODS, setMethod } from "./right-panel";
 
 /**
  * Demonstration of the GeoLibre top toolbar menu host API.
@@ -15,7 +15,7 @@ import { RIGHT_PANEL_ID } from "./right-panel";
  */
 
 /** Stable id for this plugin's toolbar menu. Replace with your own. */
-export const TOOLBAR_MENU_ID = "geolibre-plugin-template-menu";
+export const TOOLBAR_MENU_ID = "spatio-ra-mce-menu";
 
 /**
  * Register the template's top toolbar menu.
@@ -28,6 +28,18 @@ export function registerTemplateToolbarMenu<TControl extends GeoLibreControl>(
   app: GeoLibreAppAPI<TControl>,
 ): (() => void) | null {
   if (!app.registerToolbarMenu) return null;
+  const methods :GeoLibreToolbarMenuItem[] = [];
+    for(let i=1; i<BASE_METHODS.length; i++){
+      methods.push({
+        id: BASE_METHODS[i],
+        label: BASE_METHODS[i],
+        disabled: !app.openRightPanel,
+        onSelect: ()=>{
+          app.openRightPanel?.(RIGHT_PANEL_ID);
+          setMethod(BASE_METHODS[i]);
+        },
+      });
+    }
 
   return app.registerToolbarMenu({
     id: TOOLBAR_MENU_ID,

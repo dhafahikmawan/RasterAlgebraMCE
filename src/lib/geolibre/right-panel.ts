@@ -1,12 +1,18 @@
 import type { GeoLibreAppAPI, GeoLibreControl } from "./host-api";
 import { loadRasterFromFile, compileExpression, calculateRaster } from "../SpatioProcessing/raster-algebra";
 import type { RasterInput } from "../SpatioProcessing/raster-algebra";
+import { buildMceRaster, calculateAhpWeights } from "../SpatioProcessing/mce";
+import type { MceBandMode } from "../SpatioProcessing/mce";
+import {
+  applyRightPanelStyle,
+} from "../styles/right-panel-styles";
 
 /**
  * Set to `false` to hide the Download Result button for end-users.
  * Toggle this at the top of the file during development/deployment.
  */
-const ENABLE_DOWNLOAD = true;
+export const ENABLE_DOWNLOAD = true;
+
 
 /**
  * Demonstration of the GeoLibre right-sidebar panel host API.
@@ -24,14 +30,25 @@ const ENABLE_DOWNLOAD = true;
  */
 
 /** Stable id for this plugin's right panel. Replace with your own. */
-let _app : GeoLibreAppAPI;
-export const RIGHT_PANEL_ID = "geolibre-plugin-template-workbench";
+export const RIGHT_PANEL_ID = "spatio-ra-mce-panel";
 export const BASE_METHODS = ["", "Raster Algebra", "Multi Criteria Evaluation"];
-export const BASE_METHODS_TC = ["Select Processing Function", "Raster Algebra", "Multi Criteria Evaluation"]
+export const BASE_METHODS_TC = ["Select Processing Function", "Raster Algebra", "Multi Criteria Evaluation"];
+
+let _app : GeoLibreAppAPI;
+let _method : HTMLSelectElement;
+let _methodForm : HTMLElement;
+
+export function setMethod(process : string){
+  if(_method && _methodForm){
+    _method.value = process;
+    loadOptionForm(_methodForm, process);
+  }
+}
 
 function drawDropdownOptions(dropdown : HTMLElement, options: string[], tcs?: string[]){
   options.forEach((option, index) =>{
     const optionElement = document.createElement("option");
+    applyRightPanelStyle(optionElement, "selectOption");
     optionElement.value = option;
     if(!tcs || index >= tcs.length){
       optionElement.textContent = option;
@@ -40,6 +57,10 @@ function drawDropdownOptions(dropdown : HTMLElement, options: string[], tcs?: st
     }
     dropdown.appendChild(optionElement);
   })
+}
+
+function setRightPanelVisibility(element: HTMLElement, styleName: "hidden" | "visibleFlex") {
+  applyRightPanelStyle(element, styleName);
 }
 
 
@@ -67,7 +88,7 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
 
     // ── Status bar ─────────────────────────────────────────────────────────
     const status = document.createElement('div');
-    status.className = 'plugin-control-status';
+    applyRightPanelStyle(status, "status");
     status.setAttribute('role', 'status');
 
     // ── File uploader ──────────────────────────────────────────────────────
@@ -75,23 +96,23 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
     uploader.type = 'file';
     uploader.multiple = true;
     uploader.accept = '.tif,.tiff,image/tiff';
-    uploader.className = 'plugin-control-input';
+    applyRightPanelStyle(uploader, "input");
     uploader.setAttribute('aria-label', 'Raster files');
 
     // ── Raster list container ──────────────────────────────────────────────
     const rasterList = document.createElement('div');
-    rasterList.className = 'plugin-control-raster-list';
+    applyRightPanelStyle(rasterList, "rasterList");
 
     // ── Keyboard toggle ────────────────────────────────────────────────────
     const keyboardToggle = document.createElement('button');
     keyboardToggle.type = 'button';
-    keyboardToggle.className = 'plugin-control-button';
+    applyRightPanelStyle(keyboardToggle, "button");
     keyboardToggle.textContent = 'Open/Close Calculator Keyboard';
 
     // ── Operator keyboard grid ─────────────────────────────────────────────
     const operationsContainer = document.createElement('div');
-    operationsContainer.className = 'plugin-control-operations';
-    operationsContainer.style.display = 'none';
+    applyRightPanelStyle(operationsContainer, "operations");
+    setRightPanelVisibility(operationsContainer, "hidden");
     const rows: string[][] = [];
     for (let i = 0; i < OPERATIONS.length; i += 4) {
       rows.push(OPERATIONS.slice(i, i + 4));
@@ -99,11 +120,12 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
 
     // ── Expression textarea ────────────────────────────────────────────────
     const expressionLabel = document.createElement('label');
-    expressionLabel.className = 'plugin-control-label';
+    applyRightPanelStyle(expressionLabel, "label");
     expressionLabel.textContent = 'Expression';
 
     const expressionArea = document.createElement('textarea');
-    expressionArea.className = 'plugin-control-input plugin-control-expression';
+    applyRightPanelStyle(expressionArea, "input");
+    applyRightPanelStyle(expressionArea, "expression");
     expressionArea.rows = 4;
     expressionArea.placeholder = 'Use the raster buttons or enter an expression';
 
@@ -128,10 +150,12 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
     // Build operator buttons
     rows.forEach((rowOps, rowIndex) => {
       const row = document.createElement('div');
-      row.className = `plugin-control-operation-row plugin-control-operation-row-${rowIndex + 1}`;
+      applyRightPanelStyle(row, "operationRow");
+      row.dataset.operationRow = String(rowIndex + 1);
       rowOps.forEach((op) => {
         const btn = document.createElement('button');
         btn.type = 'button';
+        applyRightPanelStyle(btn, "operationButton");
         btn.textContent = op;
         btn.addEventListener('click', () => insertText(op));
         row.appendChild(btn);
@@ -142,24 +166,24 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
     keyboardToggle.addEventListener('click', () => {
       keyboardOpen = !keyboardOpen;
       keyboardToggle.setAttribute('aria-pressed', String(keyboardOpen));
-      operationsContainer.style.display = keyboardOpen ? 'flex' : 'none';
+      setRightPanelVisibility(operationsContainer, keyboardOpen ? "visibleFlex" : "hidden");
     });
 
     // ── Calculate button ───────────────────────────────────────────────────
     const calculateBtn = document.createElement('button');
     calculateBtn.type = 'button';
-    calculateBtn.className = 'plugin-control-button';
+    applyRightPanelStyle(calculateBtn, "button");
     calculateBtn.textContent = 'Calculate';
 
     // ── Download link ──────────────────────────────────────────────────────
     const downloadLink = document.createElement('a');
-    downloadLink.className = 'plugin-control-button';
+    applyRightPanelStyle(downloadLink, "downloadButton");
     downloadLink.textContent = 'Download Result';
     downloadLink.download = 'raster-algebra-result.tif';
     downloadLink.setAttribute('aria-disabled', 'true');
     downloadLink.tabIndex = -1;
     if (!ENABLE_DOWNLOAD) {
-      downloadLink.style.display = 'none';
+      setRightPanelVisibility(downloadLink, "hidden");
     }
     downloadLink.addEventListener('click', (event) => {
       if (!downloadLink.href || downloadLink.getAttribute('aria-disabled') === 'true') {
@@ -172,27 +196,36 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
       removeAllChildElements(rasterList);
       rasters.forEach((raster) => {
         const row = document.createElement('div');
-        row.className = 'plugin-control-raster-row';
+        applyRightPanelStyle(row, "rasterRow");
         row.dataset.rasterKey = raster.key;
 
         const label = document.createElement('span');
         label.textContent = raster.key;
 
         const aliasInput = document.createElement('input');
-        aliasInput.className = 'plugin-control-input';
+        applyRightPanelStyle(aliasInput, "input");
+        aliasInput.dataset.rasterAliasKey = raster.key;
         aliasInput.placeholder = 'Alias';
         aliasInput.value = raster.alias ?? '';
         aliasInput.addEventListener('input', () => {
+          const selectionStart = aliasInput.selectionStart ?? aliasInput.value.length;
+          const selectionEnd = aliasInput.selectionEnd ?? selectionStart;
           raster.alias = aliasInput.value || undefined;
           renderRasterList();
+          const replacement = Array.from(
+            rasterList.querySelectorAll<HTMLInputElement>('input[data-raster-alias-key]'),
+          ).find((input) => input.dataset.rasterAliasKey === raster.key);
+          replacement?.focus();
+          replacement?.setSelectionRange(selectionStart, selectionEnd);
         });
 
         const bandsContainer = document.createElement('div');
-        bandsContainer.className = 'plugin-control-raster-bands';
+        applyRightPanelStyle(bandsContainer, "rasterBands");
         const bandCount = Math.max(1, raster.source.bandCount);
         for (let b = 1; b <= bandCount; b++) {
           const insertBtn = document.createElement('button');
           insertBtn.type = 'button';
+          applyRightPanelStyle(insertBtn, "operationButton");
           const identity = raster.alias || raster.key;
           const reference = bandCount === 1 ? identity : `${identity}.band_${b}`;
           const bandLabel =
@@ -211,6 +244,7 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
 
         const deleteBtn = document.createElement('button');
         deleteBtn.type = 'button';
+        applyRightPanelStyle(deleteBtn, "button");
         deleteBtn.textContent = 'Delete';
         deleteBtn.setAttribute('aria-label', `Delete raster ${raster.key}`);
         deleteBtn.addEventListener('click', () => {
@@ -220,7 +254,7 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
         });
 
         const controls = document.createElement('div');
-        controls.className = 'plugin-control-raster-controls';
+        applyRightPanelStyle(controls, "rasterControls");
         controls.append(aliasInput, bandsContainer, deleteBtn);
         row.append(label, controls);
         rasterList.appendChild(row);
@@ -318,7 +352,250 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
     );
   }
   else if(method === "Multi Criteria Evaluation"){
-    
+    const MAX_RASTER_COUNT = 4;
+    const inputs: Array<{ file: File | null; weight: string }> = [];
+    const rowWeightControls: Array<{ number: HTMLInputElement; slider: HTMLInputElement }> = [];
+    let ahpMatrix: number[][] = [];
+    let selectedBandMode: MceBandMode = "first";
+    let resultUrl: string | null = null;
+
+    const status = document.createElement("p");
+    applyRightPanelStyle(status, "status");
+    const countGroup = document.createElement("div");
+    applyRightPanelStyle(countGroup, "countGroup");
+    const countLabel = document.createElement("label");
+    applyRightPanelStyle(countLabel, "label");
+    countLabel.textContent = "Number of rasters";
+    const countInput = document.createElement("input");
+    countInput.type = "range";
+    countInput.min = "1";
+    countInput.max = String(MAX_RASTER_COUNT);
+    countInput.value = "2";
+    applyRightPanelStyle(countInput, "range");
+    const countValue = document.createElement("output");
+    applyRightPanelStyle(countValue, "output");
+    countValue.textContent = countInput.value;
+    countGroup.append(countLabel, countInput, countValue);
+
+    const rows = document.createElement("div");
+    applyRightPanelStyle(rows, "mceRows");
+    const ahpToggle = document.createElement("input");
+    ahpToggle.type = "checkbox";
+    ahpToggle.name = "mce-use-ahp";
+    applyRightPanelStyle(ahpToggle, "checkbox");
+    const ahpLabel = document.createElement("label");
+    applyRightPanelStyle(ahpLabel, "ahpLabel");
+    ahpLabel.append(ahpToggle, document.createTextNode(" Use AHP Calculator to generate weights"));
+    const ahpContainer = document.createElement("div");
+    applyRightPanelStyle(ahpContainer, "ahpContainer");
+    setRightPanelVisibility(ahpContainer, "hidden");
+
+    const bandGroup = document.createElement("fieldset");
+    applyRightPanelStyle(bandGroup, "fieldset");
+    const bandLegend = document.createElement("legend");
+    applyRightPanelStyle(bandLegend, "legend");
+    bandLegend.textContent = "Band processing";
+    bandGroup.appendChild(bandLegend);
+    ([
+      ["first", "Process only the first band"],
+      ["all", "Process all bands"],
+      ["average", "Average bands to one band"],
+    ] as Array<[MceBandMode, string]>).forEach(([value, labelText]) => {
+      const label = document.createElement("label");
+      applyRightPanelStyle(label, "radioLabel");
+      const radio = document.createElement("input");
+      radio.type = "radio";
+      applyRightPanelStyle(radio, "radio");
+      radio.name = "mce-band-mode";
+      radio.value = value;
+      radio.checked = value === selectedBandMode;
+      radio.addEventListener("change", () => {
+        if (radio.checked) {
+          selectedBandMode = value;
+          setRightPanelVisibility(averagingGroup, value === "average" ? "visibleFlex" : "hidden");
+        }
+      });
+      label.append(radio, document.createTextNode(` ${labelText}`));
+      bandGroup.appendChild(label);
+    });
+    const averagingGroup = document.createElement("label");
+    applyRightPanelStyle(averagingGroup, "averagingGroup");
+    averagingGroup.textContent = "Average bands";
+    const averagingMode = document.createElement("select");
+    drawDropdownOptions(averagingMode, ["before", "after"], ["Before normalization", "After normalization"]);
+    applyRightPanelStyle(averagingMode, "methodSelect");
+    averagingGroup.appendChild(averagingMode);
+    setRightPanelVisibility(averagingGroup, "hidden");
+
+    const calculateButton = document.createElement("button");
+    calculateButton.type = "button";
+    applyRightPanelStyle(calculateButton, "button");
+    calculateButton.textContent = "Calculate";
+    const downloadLink = document.createElement("a");
+    applyRightPanelStyle(downloadLink, "downloadButton");
+    downloadLink.textContent = "Download MCE raster";
+    downloadLink.download = "mce-raster.tif";
+    downloadLink.setAttribute("aria-disabled", "true");
+    if (!ENABLE_DOWNLOAD) setRightPanelVisibility(downloadLink, "hidden");
+
+    const clampCount = (value: number) => Math.min(MAX_RASTER_COUNT, Math.max(1, Math.trunc(value)));
+    const resizeMatrix = (count: number) => {
+      ahpMatrix = Array.from({ length: count }, (_, row) =>
+        Array.from({ length: count }, (_, column) => {
+          if (row === column) return 1;
+          return ahpMatrix[row]?.[column] ?? (ahpMatrix[column]?.[row] ? 1 / ahpMatrix[column][row] : 1);
+        }),
+      );
+    };
+    const renderAhp = () => {
+      const count = clampCount(Number(countInput.value));
+      resizeMatrix(count);
+      ahpContainer.replaceChildren();
+      setRightPanelVisibility(ahpContainer, ahpToggle.checked ? "visibleFlex" : "hidden");
+      if (!ahpToggle.checked) return;
+      const table = document.createElement("table");
+      applyRightPanelStyle(table, "table");
+      const header = document.createElement("tr");
+      applyRightPanelStyle(header, "tableRow");
+      const emptyHeader = document.createElement("th");
+      applyRightPanelStyle(emptyHeader, "tableHeader");
+      header.appendChild(emptyHeader);
+      for (let column = 0; column < count; column += 1) {
+        const cell = document.createElement("th");
+        applyRightPanelStyle(cell, "tableHeader");
+        cell.textContent = `Raster ${column + 1}`;
+        header.appendChild(cell);
+      }
+      table.appendChild(header);
+      for (let row = 0; row < count; row += 1) {
+        const tableRow = document.createElement("tr");
+        applyRightPanelStyle(tableRow, "tableRow");
+        const label = document.createElement("th");
+        applyRightPanelStyle(label, "tableHeader");
+        label.textContent = `Raster ${row + 1}`;
+        tableRow.appendChild(label);
+        for (let column = 0; column < count; column += 1) {
+          const cell = document.createElement("td");
+          applyRightPanelStyle(cell, "tableCell");
+          const input = document.createElement("input");
+          applyRightPanelStyle(input, "ahpInput");
+          input.value = ahpMatrix[row][column].toFixed(2);
+          input.disabled = row >= column;
+          input.type = row < column ? "number" : "text";
+          input.dataset.row = String(row);
+          input.dataset.col = String(column);
+          if (row < column) {
+            input.min = "0.01";
+            input.addEventListener("input", () => {
+              const value = Number(input.value);
+              const safeValue = Number.isFinite(value) && value > 0 ? value : 1;
+              ahpMatrix[row][column] = safeValue;
+              ahpMatrix[column][row] = 1 / safeValue;
+              const reciprocal = ahpContainer.querySelector<HTMLInputElement>(`input[data-row='${column}'][data-col='${row}']`);
+              if (reciprocal) reciprocal.value = (1 / safeValue).toFixed(2);
+            });
+          }
+          cell.appendChild(input);
+          tableRow.appendChild(cell);
+        }
+        table.appendChild(tableRow);
+      }
+      const calculateAhp = document.createElement("button");
+      calculateAhp.type = "button";
+      applyRightPanelStyle(calculateAhp, "button");
+      applyRightPanelStyle(calculateAhp, "ahpButton");
+      calculateAhp.textContent = "Calculate AHP Weights";
+      calculateAhp.addEventListener("click", () => {
+        const weights = calculateAhpWeights(ahpMatrix);
+        weights.forEach((weight, index) => {
+          if (!inputs[index]) inputs[index] = { file: null, weight: "0" };
+          inputs[index].weight = weight.toFixed(2);
+          rowWeightControls[index]?.number && (rowWeightControls[index].number.value = inputs[index].weight);
+          rowWeightControls[index]?.slider && (rowWeightControls[index].slider.value = inputs[index].weight);
+        });
+        updateCalculateState();
+      });
+      ahpContainer.append(table, calculateAhp);
+    };
+    const updateCalculateState = () => {
+      calculateButton.disabled = !inputs.every((input) => input.file && Number.isFinite(Number(input.weight)));
+    };
+    const renderRows = () => {
+      const count = clampCount(Number(countInput.value));
+      countInput.value = String(count);
+      countValue.textContent = String(count);
+      const previous = inputs.slice();
+      inputs.length = 0;
+      rowWeightControls.length = 0;
+      rows.replaceChildren();
+      for (let index = 0; index < count; index += 1) {
+        const item = previous[index] ?? { file: null, weight: (1 / count).toFixed(2) };
+        inputs.push(item);
+        const row = document.createElement("div");
+        applyRightPanelStyle(row, "mceRow");
+        const label = document.createElement("span");
+        applyRightPanelStyle(label, "text");
+        label.textContent = `Raster ${index + 1}`;
+        const file = document.createElement("input");
+        file.type = "file";
+        file.accept = ".tif,.tiff,image/tiff";
+        applyRightPanelStyle(file, "input");
+        file.addEventListener("change", () => { inputs[index].file = file.files?.[0] ?? null; updateCalculateState(); });
+        const number = document.createElement("input");
+        number.type = "number";
+        applyRightPanelStyle(number, "mceWeightInput");
+        number.min = "0";
+        number.max = "1";
+        number.step = "0.01";
+        number.value = item.weight;
+        const slider = document.createElement("input");
+        slider.type = "range";
+        slider.min = "0";
+        slider.max = "1";
+        slider.step = "0.01";
+        slider.value = item.weight;
+        applyRightPanelStyle(slider, "range");
+        number.addEventListener("input", () => { inputs[index].weight = number.value; slider.value = number.value; updateCalculateState(); });
+        slider.addEventListener("input", () => { inputs[index].weight = slider.value; number.value = slider.value; updateCalculateState(); });
+        rowWeightControls.push({ number, slider });
+        row.append(label, file, number, slider);
+        rows.appendChild(row);
+      }
+      resizeMatrix(count);
+      updateCalculateState();
+      renderAhp();
+    };
+    ahpToggle.addEventListener("change", renderAhp);
+    countInput.addEventListener("input", renderRows);
+    calculateButton.addEventListener("click", async () => {
+      const entries = inputs.map((input) => ({ file: input.file, weight: Number(input.weight) }));
+      if (entries.some((entry) => !entry.file || !Number.isFinite(entry.weight))) {
+        status.textContent = "Please provide a valid file and weight for each raster.";
+        return;
+      }
+      status.textContent = "Preparing MCE raster…";
+      calculateButton.disabled = true;
+      try {
+        const blob = await buildMceRaster(entries as Array<{ file: File; weight: number }>, {
+          bandMode: selectedBandMode,
+          mode: averagingMode.value === "after" ? "after" : "before",
+        });
+        if (resultUrl) URL.revokeObjectURL(resultUrl);
+        resultUrl = URL.createObjectURL(blob);
+        await _app.addCogLayer?.("Plugin-MCE-Raster", resultUrl, { opacity: 1, colormap: "terrain", rescaleMin: 0, rescaleMax: 1, bands: "1" });
+        if (ENABLE_DOWNLOAD) {
+          downloadLink.href = resultUrl;
+          downloadLink.setAttribute("aria-disabled", "false");
+        }
+        status.textContent = "MCE raster generated successfully.";
+      } catch (error) {
+        status.textContent = `Processing failed: ${(error as Error).message}`;
+      } finally {
+        updateCalculateState();
+      }
+    });
+    renderRows();
+    wrapper.append(status, countGroup, ahpLabel, ahpContainer, rows, bandGroup, averagingGroup, calculateButton, downloadLink);
   }
 }
 
@@ -353,32 +630,25 @@ export function registerTemplateRightPanel<TControl extends GeoLibreControl>(
     render(container) {
       //Wrapper
       const wrap = document.createElement("div");
-      wrap.className = "geolibre-plugin-right-panel";
+      applyRightPanelStyle(wrap, "panel");
 
       //Description
       const heading = document.createElement("h2");
+      applyRightPanelStyle(heading, "heading");
       heading.textContent = "Plugin Workbench";
 
       //Method Select
       const method = document.createElement("select");
-      method.className = "geoprocessing-method-select";
-      const methodPlaceholder = document.createElement("option");
-      methodPlaceholder.value = "";
-      methodPlaceholder.textContent = "Select Geoprocessing function";
-      methodPlaceholder.className = "geoprocessing-method-option";
-      method.appendChild(methodPlaceholder);
+      applyRightPanelStyle(method, "methodSelect");
+      _method = method;
       drawDropdownOptions(method, BASE_METHODS, BASE_METHODS_TC);
 
       //Method Form Container
       const methodFormContainer = document.createElement("div");
-      methodFormContainer.className = "geoprocessing-method-form-container";
-
+      applyRightPanelStyle(methodFormContainer, "formContainer");
+      _methodForm = methodFormContainer;
       const body = document.createElement("p");
-      body.textContent =
-        "This panel is rendered by the plugin through app.registerRightPanel(). " +
-        "Replace this content with your own workbench, query review, or " +
-        "dashboard UI. Drive it with app.openRightPanel(), collapseRightPanel(), " +
-        "and closeRightPanel().";
+      applyRightPanelStyle(body, "description");
 
       wrap.append(heading, body, method, methodFormContainer);
       container.appendChild(wrap);

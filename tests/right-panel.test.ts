@@ -71,4 +71,80 @@ describe("registerTemplateRightPanel", () => {
     const { app } = createApp(false);
     expect(registerTemplateRightPanel(app)).toBeNull();
   });
+
+  it("uses registry styles without changing Raster Algebra control types", () => {
+    const { app, getRegistered } = createApp();
+    registerTemplateRightPanel(app);
+
+    const panel = getRegistered();
+    const container = document.createElement("div");
+    panel?.render(container);
+    const method = container.querySelector<HTMLSelectElement>("select");
+    method!.value = "Raster Algebra";
+    method!.dispatchEvent(new Event("change"));
+
+    const uploader = container.querySelector<HTMLInputElement>('input[type="file"]');
+    const expression = container.querySelector("textarea");
+    const calculate = Array.from(container.querySelectorAll("button")).find(
+      (button) => button.textContent === "Calculate",
+    );
+    const download = Array.from(container.querySelectorAll("a")).find(
+      (link) => link.textContent === "Download Result",
+    );
+    const options = Array.from(method!.options);
+
+    expect(method?.tagName).toBe("SELECT");
+    expect(method?.style.backgroundColor).toBe("rgb(255, 255, 255)");
+    expect(method?.style.border).toContain("1px solid");
+    expect(options.every((option) => option.style.backgroundColor === "rgb(255, 255, 255)")).toBe(true);
+    expect(options.every((option) => option.style.color === "rgb(0, 0, 0)")).toBe(true);
+    expect(uploader?.type).toBe("file");
+    expect(uploader?.style.border).toContain("1px solid");
+    expect(expression?.tagName).toBe("TEXTAREA");
+    expect(expression?.style.border).toContain("1px solid");
+    expect(calculate?.tagName).toBe("BUTTON");
+    expect(calculate?.style.border).toContain("1px solid");
+    expect(download?.style.border).toContain("1px solid");
+    expect(container.firstElementChild?.style.padding).toBe("16px");
+    expect(container.firstElementChild?.style.boxSizing).toBe("border-box");
+  });
+
+  it("styles MCE controls and preserves dynamic visibility", () => {
+    const { app, getRegistered } = createApp();
+    registerTemplateRightPanel(app);
+
+    const panel = getRegistered();
+    const container = document.createElement("div");
+    panel?.render(container);
+    const method = container.querySelector<HTMLSelectElement>("select");
+    method!.value = "Multi Criteria Evaluation";
+    method!.dispatchEvent(new Event("change"));
+
+    const count = container.querySelector<HTMLInputElement>('input[type="range"]');
+    const file = container.querySelector<HTMLInputElement>('input[type="file"]');
+    const weight = container.querySelector<HTMLInputElement>('input[type="number"]');
+    const ahpToggle = container.querySelector<HTMLInputElement>('input[type="checkbox"]');
+    const ahpContainer = container.querySelector<HTMLElement>(".right-panel-ahpContainer");
+    const averageRadio = container.querySelector<HTMLInputElement>('input[value="average"]');
+    const averagingGroup = container.querySelector<HTMLElement>(".right-panel-averagingGroup");
+
+    expect(count?.type).toBe("range");
+    expect(count?.style.accentColor).toBe("rgb(29, 78, 216)");
+    expect(file?.type).toBe("file");
+    expect(file?.style.border).toContain("1px solid");
+    expect(weight?.type).toBe("number");
+    expect(weight?.style.border).toContain("1px solid");
+    expect(ahpToggle?.type).toBe("checkbox");
+    expect(ahpContainer?.style.display).toBe("none");
+    expect(averagingGroup?.style.display).toBe("none");
+
+    ahpToggle!.checked = true;
+    ahpToggle!.dispatchEvent(new Event("change"));
+    expect(ahpContainer?.style.display).toBe("flex");
+    expect(ahpContainer?.querySelector("table")).not.toBeNull();
+
+    averageRadio!.checked = true;
+    averageRadio!.dispatchEvent(new Event("change"));
+    expect(averagingGroup?.style.display).toBe("flex");
+  });
 });
