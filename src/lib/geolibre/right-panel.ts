@@ -59,7 +59,7 @@ function drawDropdownOptions(dropdown : HTMLElement, options: string[], tcs?: st
   })
 }
 
-function setRightPanelVisibility(element: HTMLElement, styleName: "hidden" | "visibleFlex") {
+function setRightPanelVisibility(element: HTMLElement, styleName: "hidden" | "visibleFlex" | "visibleGrid") {
   applyRightPanelStyle(element, styleName);
 }
 
@@ -111,12 +111,8 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
 
     // ── Operator keyboard grid ─────────────────────────────────────────────
     const operationsContainer = document.createElement('div');
-    applyRightPanelStyle(operationsContainer, "operations");
+    applyRightPanelStyle(operationsContainer, "operationsGrid");
     setRightPanelVisibility(operationsContainer, "hidden");
-    const rows: string[][] = [];
-    for (let i = 0; i < OPERATIONS.length; i += 4) {
-      rows.push(OPERATIONS.slice(i, i + 4));
-    }
 
     // ── Expression textarea ────────────────────────────────────────────────
     const expressionLabel = document.createElement('label');
@@ -147,26 +143,22 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
       expressionArea.selectionStart = expressionArea.selectionEnd = expressionSelectionStart;
     };
 
-    // Build operator buttons
-    rows.forEach((rowOps, rowIndex) => {
-      const row = document.createElement('div');
-      applyRightPanelStyle(row, "operationRow");
-      row.dataset.operationRow = String(rowIndex + 1);
-      rowOps.forEach((op) => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        applyRightPanelStyle(btn, "operationButton");
-        btn.textContent = op;
-        btn.addEventListener('click', () => insertText(op));
-        row.appendChild(btn);
-      });
-      operationsContainer.appendChild(row);
+    // Build operator buttons — all placed directly into the grid container.
+    // `mousedown` is prevented so the textarea never loses focus when a key is clicked.
+    OPERATIONS.forEach((op) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      applyRightPanelStyle(btn, "operationButton");
+      btn.textContent = op;
+      btn.addEventListener('mousedown', (e) => e.preventDefault());
+      btn.addEventListener('click', () => insertText(op));
+      operationsContainer.appendChild(btn);
     });
 
     keyboardToggle.addEventListener('click', () => {
       keyboardOpen = !keyboardOpen;
       keyboardToggle.setAttribute('aria-pressed', String(keyboardOpen));
-      setRightPanelVisibility(operationsContainer, keyboardOpen ? "visibleFlex" : "hidden");
+      setRightPanelVisibility(operationsContainer, keyboardOpen ? "visibleGrid" : "hidden");
     });
 
     // ── Calculate button ───────────────────────────────────────────────────

@@ -155,6 +155,15 @@ export const RIGHT_PANEL_STYLES = {
     border: "1px solid #cbd5e1",
     borderRadius: "4px",
   },
+  operationsGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(4, 1fr)",
+    gap: "6px",
+    padding: "8px",
+    backgroundColor: "#e2e8f0",
+    border: "1px solid #cbd5e1",
+    borderRadius: "4px",
+  },
   operationRow: {
     display: "flex",
     flexWrap: "wrap",
@@ -261,6 +270,9 @@ export const RIGHT_PANEL_STYLES = {
   },
   visibleFlex: {
     display: "flex",
+  },
+  visibleGrid: {
+    display: "grid",
   },
 } as const;
 
