@@ -43,11 +43,11 @@ export function registerTemplateToolbarMenu<TControl extends GeoLibreControl>(
 
   return app.registerToolbarMenu({
     id: TOOLBAR_MENU_ID,
-    label: "Template",
+    label: "RA & MCE",
     items: [
       {
         id: "open-right",
-        label: "Open workbench panel",
+        label: "Open RA & MCE panel",
         // Disable the item on hosts that lack the capability, so it is not a
         // clickable no-op (demonstrates the `disabled` flag + capability check).
         disabled: !app.openRightPanel,

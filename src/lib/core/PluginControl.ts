@@ -6,7 +6,6 @@ import type {
   PluginControlEventHandler,
 } from './types';
 import type { DeepLinkConsumer } from '../utils/deep-link';
-import type { GeoLibreNativeLayerRegistration } from '../geolibre/host-api';
 
 /**
  * Default options for the PluginControl.
@@ -282,15 +281,7 @@ export class PluginControl implements IControl, DeepLinkConsumer {
     this._setStatus(`Loaded: ${value}`);
 
     // Demonstrate handing a dataset to GeoLibre as a native layer it owns.
-    this._registerNativeLayer({
-      id: 'plugin-template-data',
-      name: 'Plugin data',
-      nativeLayerIds: ['plugin-template-data-layer'],
-      sourceIds: ['plugin-template-data-source'],
-      opacity: 1,
-      style: { circleRadius: 5, fillColor: '#2f7ed8' },
-      metadata: { sourceUrl: value },
-    });
+    
   }
 
   /**
@@ -299,16 +290,7 @@ export class PluginControl implements IControl, DeepLinkConsumer {
    *
    * @param layer - The native layer registration payload
    */
-  private _registerNativeLayer(layer: GeoLibreNativeLayerRegistration): void {
-    try {
-      this._options.registerNativeLayer(layer);
-      if (!this._registeredNativeLayerIds.includes(layer.id)) {
-        this._registeredNativeLayerIds.push(layer.id);
-      }
-    } catch {
-      this._setStatus('Failed to register native layer.');
-    }
-  }
+
 
   /**
    * Unregister every native layer this control registered with the host.

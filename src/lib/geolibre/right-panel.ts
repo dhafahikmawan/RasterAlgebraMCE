@@ -617,7 +617,7 @@ export function registerTemplateRightPanel<TControl extends GeoLibreControl>(
 
   const unregister = app.registerRightPanel({
     id: RIGHT_PANEL_ID,
-    title: "Workbench",
+    title: "RA & MCE",
     defaultWidth: 320,
     render(container) {
       //Wrapper
@@ -627,7 +627,7 @@ export function registerTemplateRightPanel<TControl extends GeoLibreControl>(
       //Description
       const heading = document.createElement("h2");
       applyRightPanelStyle(heading, "heading");
-      heading.textContent = "Plugin Workbench";
+      heading.textContent = "Raster Algebra & MCE";
 
       //Method Select
       const method = document.createElement("select");
