@@ -63,7 +63,7 @@ function setRightPanelVisibility(element: HTMLElement, styleName: "hidden" | "vi
   applyRightPanelStyle(element, styleName);
 }
 
-
+let resultUrls: string [] = [];
 function loadOptionForm(wrapper: HTMLElement, method : string){
   removeAllChildElements(wrapper);
   if(method === "Raster Algebra"){
@@ -170,7 +170,7 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
     // ── Download link ──────────────────────────────────────────────────────
     const downloadLink = document.createElement('a');
     applyRightPanelStyle(downloadLink, "downloadButton");
-    downloadLink.textContent = 'Download Result';
+    downloadLink.textContent = 'Download Latest Result';
     downloadLink.download = 'raster-algebra-result.tif';
     downloadLink.setAttribute('aria-disabled', 'true');
     downloadLink.tabIndex = -1;
@@ -305,11 +305,11 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
       calculateRaster(rasters, compiled, NAN_HANDLING_MODE)
         .then(({ blob, warnings }) => {
           // Revoke previous object URL to free memory
-          if (resultDownloadUrl) URL.revokeObjectURL(resultDownloadUrl);
+          //if (resultDownloadUrl) URL.revokeObjectURL(resultDownloadUrl);
           resultDownloadUrl = URL.createObjectURL(blob);
-
+          resultUrls.push(resultDownloadUrl);
           // Load result layer onto the map
-          _app.addCogLayer?.('Raster Algebra Result', resultDownloadUrl);
+          _app.addCogLayer?.('Raster Algebra Result', resultUrls.length > 0? resultUrls[resultUrls.length-1]: resultDownloadUrl);
 
           // Enable download link
           if (ENABLE_DOWNLOAD) {
@@ -652,6 +652,9 @@ export function registerTemplateRightPanel<TControl extends GeoLibreControl>(
 
       // Optional cleanup, run when the panel closes or is unregistered.
       return () => {
+        resultUrls.forEach(resultUrl => {
+          if(resultUrl) URL.revokeObjectURL(resultUrl);
+        })
         wrap.remove();
       };
     },

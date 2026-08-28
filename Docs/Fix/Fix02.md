@@ -1,0 +1,3 @@
+### Fix and Update List 01
+
+1. Currently, when the user generates multiple calculation results using the Raster Calculator, Only the latest result has readable values in GeoLibre. I suspect that it is because when a new calculation result is generated, the connection between GeoLibre and the old result is severed. So, let's make it so that every calculation result is stored in an array (before loading them to GeoLibre), and when loading them using addCogLayer, use the  array entry that was just added as the source argument. Keep the download button behavior to download the latest calculation result
