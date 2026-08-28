@@ -11,7 +11,19 @@
  * type, so the same definitions describe both vanilla and React plugins. The
  * concrete control type is supplied as a generic parameter where it matters.
  */
-import type { FeatureCollection } from "geojson";
+import type { Feature, FeatureCollection, Geometry } from "geojson";
+export interface GeoLibreLayerSummary {
+  id: string;
+  name: string;
+  type: string;
+  visible: boolean;
+  opacity: number;
+}
+
+export interface GeoLibreSelection {
+  layerId: string | null;
+  features: Feature<Geometry | null>[];
+}
 
 export interface GeoLibreZarrLayerOptions {
   variable: string;                            // array to render (required)
@@ -199,6 +211,11 @@ export interface GeoLibreAppAPI<TControl extends GeoLibreControl = GeoLibreContr
    * (for example, the slot is occupied), in which case the plugin should treat
    * activation as failed.
    */
+  listLayers?: () => GeoLibreLayerSummary[];
+  getLayerFeatures?: (layerId: string) => Feature<Geometry | null>[];
+  getSelectedFeatures?: () => Feature<Geometry | null>[];
+  getSelectedLayerId?: () => string | null;
+  getMap?: () => import("maplibre-gl").Map | null;
   addGeoJsonLayer: (
     name: string,
     data: FeatureCollection,
