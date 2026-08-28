@@ -627,7 +627,7 @@ export function registerTemplateRightPanel<TControl extends GeoLibreControl>(
       //Description
       const heading = document.createElement("h2");
       applyRightPanelStyle(heading, "heading");
-      heading.textContent = "Raster Algebra & MCE";
+      heading.textContent = "Raster Algebra & MCE Workbench";
 
       //Method Select
       const method = document.createElement("select");
@@ -660,7 +660,7 @@ export function registerTemplateRightPanel<TControl extends GeoLibreControl>(
   // Open it right away so the example is visible on activation. Remove this call
   // (or gate it behind a button in your control) if you would rather open the
   // panel on demand instead of every time the plugin activates.
-  app.openRightPanel?.(RIGHT_PANEL_ID);
+  //app.openRightPanel?.(RIGHT_PANEL_ID);
 
   return () => {
     app.closeRightPanel?.(RIGHT_PANEL_ID);
