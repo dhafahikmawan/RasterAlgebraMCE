@@ -68,4 +68,57 @@ describe("buildMceRaster", () => {
     const output = writeFloat32TiledGeoTIFF.mock.calls.at(-1)?.[2] as Float32Array;
     expect(Array.from(output)).toEqual([0, 1]);
   });
+
+  it("uses the explicitly selected bounding raster as the output grid", async () => {
+    readRasterFromFile
+      .mockResolvedValueOnce(source(1, 1, [1], [0, 1, 0, 1, 0, -1]))
+      .mockResolvedValueOnce(source(1, 1, [9], [10, 2, 0, 20, 0, -2]));
+
+    await buildMceRaster(
+      [
+        { file: new File(["a"], "a.tif"), weight: 1 },
+        { file: new File(["b"], "b.tif"), weight: 1 },
+      ],
+      { missingDataMode: "0" },
+      "b.tif",
+    );
+
+    const geotransform = writeFloat32TiledGeoTIFF.mock.calls.at(-1)?.[3] as RasterSource["geotransform"];
+    expect(geotransform).toEqual([10, 2, 0, 20, 0, -2]);
+  });
+
+  it("applies NaN mode to real NoData cells after normalization", async () => {
+    readRasterFromFile.mockResolvedValueOnce(source(2, 1, [5, -9999]));
+
+    await buildMceRaster([{ file: new File(["a"], "a.tif"), weight: 1 }], { missingDataMode: "NaN" });
+
+    const output = writeFloat32TiledGeoTIFF.mock.calls.at(-1)?.[2] as Float32Array;
+    expect(Array.from(output)).toEqual([0, NaN]);
+  });
+
+  it("applies the selected mode to bbox-created gaps the same way as real NoData", async () => {
+    readRasterFromFile
+      .mockResolvedValueOnce(source(1, 1, [5], [0, 1, 0, 1, 0, -1]))
+      .mockResolvedValueOnce(source(1, 1, [10], [2, 1, 0, 1, 0, -1]));
+
+    await buildMceRaster([
+      { file: new File(["a"], "a.tif"), weight: 1 },
+      { file: new File(["b"], "b.tif"), weight: 1 },
+    ], { missingDataMode: "0" });
+
+    let output = writeFloat32TiledGeoTIFF.mock.calls.at(-1)?.[2] as Float32Array;
+    expect(Array.from(output)).toEqual([0]);
+
+    readRasterFromFile
+      .mockResolvedValueOnce(source(1, 1, [5], [0, 1, 0, 1, 0, -1]))
+      .mockResolvedValueOnce(source(1, 1, [10], [2, 1, 0, 1, 0, -1]));
+
+    await buildMceRaster([
+      { file: new File(["a"], "a.tif"), weight: 1 },
+      { file: new File(["b"], "b.tif"), weight: 1 },
+    ], { missingDataMode: "NaN" });
+
+    output = writeFloat32TiledGeoTIFF.mock.calls.at(-1)?.[2] as Float32Array;
+    expect(Array.from(output)).toEqual([NaN]);
+  });
 });

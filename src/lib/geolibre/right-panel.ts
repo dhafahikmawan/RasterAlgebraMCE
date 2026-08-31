@@ -2,7 +2,7 @@ import type { GeoLibreAppAPI, GeoLibreControl } from "./host-api";
 import { loadRasterFromFile, compileExpression, calculateRaster } from "../SpatioProcessing/raster-algebra";
 import type { RasterInput } from "../SpatioProcessing/raster-algebra";
 import { buildMceRaster, calculateAhpWeights } from "../SpatioProcessing/mce";
-import type { MceBandMode } from "../SpatioProcessing/mce";
+import type { MceBandMode, MceMissingDataMode } from "../SpatioProcessing/mce";
 import {
   applyRightPanelStyle,
 } from "../styles/right-panel-styles";
@@ -110,6 +110,9 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
     const boundingRasterSelector = document.createElement('select');
     boundingRasterSelector.name = 'raster-algebra-bounding-raster';
     applyRightPanelStyle(boundingRasterSelector, "methodSelect");
+    boundingRasterSelector.addEventListener('change', () => {
+      selectedBoundingRasterKey = boundingRasterSelector.value || null;
+    });
 
     const missingDataLabel = document.createElement('label');
     applyRightPanelStyle(missingDataLabel, "label");
@@ -141,11 +144,11 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
         option.textContent = label;
         boundingRasterSelector.appendChild(option);
       });
-      const validValue = entries.some((entry) => entry.key === selectedBoundingRasterKey)
-        ? selectedBoundingRasterKey ?? entries[0].key
-        : entries[0].key;
-      selectedBoundingRasterKey = validValue;
-      boundingRasterSelector.value = validValue;
+      const currentSelection = entries.some((entry) => entry.key === selectedBoundingRasterKey)
+        ? selectedBoundingRasterKey
+        : null;
+      selectedBoundingRasterKey = currentSelection;
+      boundingRasterSelector.value = currentSelection ?? '';
       boundingRasterSelector.disabled = false;
     };
 
@@ -257,6 +260,29 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
           replacement?.setSelectionRange(selectionStart, selectionEnd);
         });
 
+        const noDataInput = document.createElement('input');
+        applyRightPanelStyle(noDataInput, "input");
+        noDataInput.type = 'number';
+        noDataInput.step = 'any';
+        noDataInput.dataset.rasterNoDataKey = raster.key;
+        noDataInput.placeholder = 'NoData';
+        noDataInput.value = raster.noData == null ? '' : String(raster.noData);
+        noDataInput.setAttribute('aria-label', `NoData value for ${raster.key}`);
+        noDataInput.addEventListener('input', () => {
+          const value = noDataInput.value.trim();
+          raster.noData = value === '' ? null : Number(value);
+          if (Number.isNaN(raster.noData)) {
+            raster.noData = null;
+          }
+          renderRasterList();
+          const replacement = Array.from(
+            rasterList.querySelectorAll<HTMLInputElement>('input[data-raster-no-data-key]'),
+          ).find((input) => input.dataset.rasterNoDataKey === raster.key);
+          replacement?.focus();
+          const selectionIndex = noDataInput.selectionStart ?? noDataInput.value.length;
+          replacement?.setSelectionRange(selectionIndex, selectionIndex);
+        });
+
         const bandsContainer = document.createElement('div');
         applyRightPanelStyle(bandsContainer, "rasterBands");
         const bandCount = Math.max(1, raster.source.bandCount);
@@ -293,7 +319,7 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
 
         const controls = document.createElement('div');
         applyRightPanelStyle(controls, "rasterControls");
-        controls.append(aliasInput, bandsContainer, deleteBtn);
+        controls.append(aliasInput, noDataInput, bandsContainer, deleteBtn);
         row.append(label, controls);
         rasterList.appendChild(row);
       });
@@ -404,10 +430,11 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
   }
   else if(method === "Multi Criteria Evaluation"){
     const MAX_RASTER_COUNT = 4;
-    const inputs: Array<{ file: File | null; weight: string }> = [];
+    const inputs: Array<{ file: File | null; weight: string; noData: string }> = [];
     const rowWeightControls: Array<{ number: HTMLInputElement; slider: HTMLInputElement }> = [];
     let ahpMatrix: number[][] = [];
     let selectedBandMode: MceBandMode = "first";
+    let selectedMissingDataMode: MceMissingDataMode = "0";
     let selectedBoundingRasterKey: string | null = null;
     let resultUrl: string | null = null;
 
@@ -437,14 +464,20 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
     const boundingRasterSelector = document.createElement("select");
     boundingRasterSelector.name = "mce-bounding-raster";
     applyRightPanelStyle(boundingRasterSelector, "methodSelect");
+    boundingRasterSelector.addEventListener("change", () => {
+      selectedBoundingRasterKey = boundingRasterSelector.value || null;
+    });
     const missingDataLabel = document.createElement("label");
     applyRightPanelStyle(missingDataLabel, "label");
     missingDataLabel.textContent = "Missing data handling";
     const missingDataSelector = document.createElement("select");
     missingDataSelector.name = "mce-missing-data-mode";
     applyRightPanelStyle(missingDataSelector, "methodSelect");
-    drawDropdownOptions(missingDataSelector, ["NaN", "0"]);
-    missingDataSelector.value = "NaN";
+    drawDropdownOptions(missingDataSelector, ["0", "NaN"]);
+    missingDataSelector.value = "0";
+    missingDataSelector.addEventListener("change", () => {
+      selectedMissingDataMode = missingDataSelector.value as MceMissingDataMode;
+    });
     const syncBoundingRasterSelector = () => {
       const entries = inputs
         .map((input, index) => (input.file ? { key: input.file.name, label: `Raster ${index + 1}` } : null))
@@ -468,11 +501,11 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
         option.textContent = label;
         boundingRasterSelector.appendChild(option);
       });
-      const validValue = entries.some((entry) => entry.key === selectedBoundingRasterKey)
-        ? selectedBoundingRasterKey ?? entries[0].key
-        : entries[0].key;
-      selectedBoundingRasterKey = validValue;
-      boundingRasterSelector.value = validValue;
+      const currentSelection = entries.some((entry) => entry.key === selectedBoundingRasterKey)
+        ? selectedBoundingRasterKey
+        : null;
+      selectedBoundingRasterKey = currentSelection;
+      boundingRasterSelector.value = currentSelection ?? "";
       boundingRasterSelector.disabled = false;
     };
     const ahpToggle = document.createElement("input");
@@ -607,7 +640,7 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
       calculateAhp.addEventListener("click", () => {
         const weights = calculateAhpWeights(ahpMatrix);
         weights.forEach((weight, index) => {
-          if (!inputs[index]) inputs[index] = { file: null, weight: "0" };
+          if (!inputs[index]) inputs[index] = { file: null, weight: "0", noData: "" };
           inputs[index].weight = weight.toFixed(2);
           rowWeightControls[index]?.number && (rowWeightControls[index].number.value = inputs[index].weight);
           rowWeightControls[index]?.slider && (rowWeightControls[index].slider.value = inputs[index].weight);
@@ -628,7 +661,7 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
       rowWeightControls.length = 0;
       rows.replaceChildren();
       for (let index = 0; index < count; index += 1) {
-        const item = previous[index] ?? { file: null, weight: (1 / count).toFixed(2) };
+        const item = previous[index] ?? { file: null, weight: (1 / count).toFixed(2), noData: "" };
         inputs.push(item);
         const row = document.createElement("div");
         applyRightPanelStyle(row, "mceRow");
@@ -640,6 +673,17 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
         file.accept = ".tif,.tiff,image/tiff";
         applyRightPanelStyle(file, "input");
         file.addEventListener("change", () => { inputs[index].file = file.files?.[0] ?? null; updateCalculateState(); syncBoundingRasterSelector(); });
+        const noDataInput = document.createElement("input");
+        noDataInput.type = "number";
+        noDataInput.step = "any";
+        noDataInput.placeholder = "NoData";
+        noDataInput.value = item.noData;
+        applyRightPanelStyle(noDataInput, "mceWeightInput");
+        noDataInput.setAttribute("aria-label", `NoData value for raster ${index + 1}`);
+        noDataInput.addEventListener("input", () => {
+          const value = noDataInput.value.trim();
+          inputs[index].noData = value;
+        });
         const number = document.createElement("input");
         number.type = "number";
         applyRightPanelStyle(number, "mceWeightInput");
@@ -657,7 +701,7 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
         number.addEventListener("input", () => { inputs[index].weight = number.value; slider.value = number.value; updateCalculateState(); });
         slider.addEventListener("input", () => { inputs[index].weight = slider.value; number.value = slider.value; updateCalculateState(); });
         rowWeightControls.push({ number, slider });
-        row.append(label, file, number, slider);
+        row.append(label, file, noDataInput, number, slider);
         rows.appendChild(row);
       }
       resizeMatrix(count);
@@ -679,6 +723,7 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
         const blob = await buildMceRaster(entries as Array<{ file: File; weight: number }>, {
           bandMode: selectedBandMode,
           mode: averagingMode.value === "after" ? "after" : "before",
+          missingDataMode: selectedMissingDataMode,
         }, selectedBoundingRasterKey ?? undefined);
         if (resultUrl) URL.revokeObjectURL(resultUrl);
         resultUrl = URL.createObjectURL(blob);
@@ -695,7 +740,7 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
       }
     });
     renderRows();
-    wrapper.append(status, countGroup, rows, boundingRasterLabel, boundingRasterSelector, ahpLabel, ahpContainer, bandGroup, averagingGroup, calculateButton, downloadLink);
+    wrapper.append(status, countGroup, rows, boundingRasterLabel, boundingRasterSelector, missingDataLabel, missingDataSelector, ahpLabel, ahpContainer, bandGroup, averagingGroup, calculateButton, downloadLink);
   }
 }
 

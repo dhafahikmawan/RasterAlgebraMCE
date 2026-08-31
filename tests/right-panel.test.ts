@@ -17,6 +17,7 @@ function createApp(withRightPanel = true) {
   let registered: GeoLibreRightPanelRegistration | null = null;
   const unregister = vi.fn();
   const app: GeoLibreAppAPI<GeoLibreControl> = {
+    addGeoJsonLayer: () => "test-layer",
     addMapControl: () => true,
     removeMapControl: () => undefined,
   };
@@ -92,6 +93,7 @@ describe("registerTemplateRightPanel", () => {
       (link) => link.textContent === "Download Result",
     );
     const options = Array.from(method!.options);
+    const firstChild = container.firstElementChild as HTMLElement | null;
 
     expect(method?.tagName).toBe("SELECT");
     expect(method?.style.backgroundColor).toBe("rgb(255, 255, 255)");
@@ -105,8 +107,26 @@ describe("registerTemplateRightPanel", () => {
     expect(calculate?.tagName).toBe("BUTTON");
     expect(calculate?.style.border).toContain("1px solid");
     expect(download?.style.border).toContain("1px solid");
-    expect(container.firstElementChild?.style.padding).toBe("16px");
-    expect(container.firstElementChild?.style.boxSizing).toBe("border-box");
+    expect(firstChild?.style.padding).toBe("16px");
+    expect(firstChild?.style.boxSizing).toBe("border-box");
+  });
+
+  it("keeps the bounding selector unset until the user makes an explicit choice", () => {
+    const { app, getRegistered } = createApp();
+    registerTemplateRightPanel(app);
+
+    const panel = getRegistered();
+    const container = document.createElement("div");
+    panel?.render(container);
+
+    const method = container.querySelector<HTMLSelectElement>("select");
+    method!.value = "Raster Algebra";
+    method!.dispatchEvent(new Event("change"));
+    expect(container.querySelector<HTMLSelectElement>('select[name="raster-algebra-bounding-raster"]')?.value).toBe("");
+
+    method!.value = "Multi Criteria Evaluation";
+    method!.dispatchEvent(new Event("change"));
+    expect(container.querySelector<HTMLSelectElement>('select[name="mce-bounding-raster"]')?.value).toBe("");
   });
 
   it("renders the missing-data policy selector after the bounding raster selector", () => {
@@ -131,6 +151,26 @@ describe("registerTemplateRightPanel", () => {
     expect(boundingSelector!.compareDocumentPosition(missingDataSelector!)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
   });
 
+  it("renders NoData inputs and the MCE missing-data selector", () => {
+    const { app, getRegistered } = createApp();
+    registerTemplateRightPanel(app);
+
+    const panel = getRegistered();
+    const container = document.createElement("div");
+    panel?.render(container);
+
+    const method = container.querySelector<HTMLSelectElement>("select");
+    method!.value = "Multi Criteria Evaluation";
+    method!.dispatchEvent(new Event("change"));
+
+    const noDataInputs = container.querySelectorAll<HTMLInputElement>('input[aria-label^="NoData value for raster"]');
+    const missingDataSelector = container.querySelector<HTMLSelectElement>('select[name="mce-missing-data-mode"]');
+
+    expect(noDataInputs.length).toBeGreaterThan(0);
+    expect(missingDataSelector).not.toBeNull();
+    expect(Array.from(missingDataSelector!.options).map((option) => option.value)).toEqual(["0", "NaN"]);
+  });
+
   it("styles MCE controls and preserves dynamic visibility", () => {
     const { app, getRegistered } = createApp();
     registerTemplateRightPanel(app);
@@ -144,7 +184,7 @@ describe("registerTemplateRightPanel", () => {
 
     const count = container.querySelector<HTMLInputElement>('input[type="range"]');
     const file = container.querySelector<HTMLInputElement>('input[type="file"]');
-    const weight = container.querySelector<HTMLInputElement>('input[type="number"]');
+    const weight = container.querySelector<HTMLInputElement>('.spazio-mce-weight-input');
     const ahpToggle = container.querySelector<HTMLInputElement>('input[type="checkbox"]');
     const ahpContainer = container.querySelector<HTMLElement>(".spazio-ahp-container");
     const averageRadio = container.querySelector<HTMLInputElement>('input[value="average"]');

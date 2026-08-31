@@ -13,7 +13,9 @@ export interface RasterInput {
   source: RasterSource;
 }
 
-export type PixelContext = Record<string, number | Record<string, boolean> | undefined>;
+export type PixelContext = Record<string, number | Record<string, boolean> | undefined> & {
+  __bboxMissing?: Record<string, boolean>;
+};
 
 export type EvaluationResult = {
   value: number;
@@ -41,6 +43,7 @@ type Evaluator = (
   context: PixelContext,
   rasterIdentities?: ReadonlyMap<string, string>,
   nanHandlingMode?: NanHandlingMode,
+  missingDataMode?: MissingDataMode,
 ) => EvaluationResult;
 
 function mergeReferences(...results: EvaluationResult[]): ReadonlySet<string> {
@@ -70,12 +73,9 @@ function applyNanFallback(
   context?: PixelContext,
   missingDataMode: MissingDataMode = 'NaN',
 ): number {
-  const leftBBoxMissing = [...left.rasterReferences].some(
-    (reference) => !!(context?.__bboxMissing && (context.__bboxMissing as Record<string, boolean>)[reference]),
-  );
-  const rightBBoxMissing = [...right.rasterReferences].some(
-    (reference) => !!(context?.__bboxMissing && (context.__bboxMissing as Record<string, boolean>)[reference]),
-  );
+  const bboxMissing = context?.__bboxMissing ?? {};
+  const leftBBoxMissing = [...left.rasterReferences].some((reference) => !!bboxMissing[reference]);
+  const rightBBoxMissing = [...right.rasterReferences].some((reference) => !!bboxMissing[reference]);
 
   if (missingDataMode === 'Skip') {
     if (Number.isNaN(left.value) && leftBBoxMissing && !Number.isNaN(right.value)) return right.value;
@@ -206,7 +206,12 @@ class Parser {
       const operator = this.consume().value;
       const right = this.parseAdditive();
       const previous = left;
-      left = (context, rasterIdentities, nanHandlingMode, missingDataMode) => {
+      left = (
+        context: PixelContext,
+        rasterIdentities?: ReadonlyMap<string, string>,
+        nanHandlingMode?: NanHandlingMode,
+        missingDataMode?: MissingDataMode,
+      ) => {
         const a = previous(context, rasterIdentities, nanHandlingMode, missingDataMode);
         const b = right(context, rasterIdentities, nanHandlingMode, missingDataMode);
         switch (operator) {
@@ -253,7 +258,12 @@ class Parser {
       const operator = this.consume().value;
       const right = this.parseMultiplicative();
       const previous = left;
-      left = (context, rasterIdentities, nanHandlingMode, missingDataMode) => {
+      left = (
+        context: PixelContext,
+        rasterIdentities?: ReadonlyMap<string, string>,
+        nanHandlingMode?: NanHandlingMode,
+        missingDataMode?: MissingDataMode,
+      ) => {
         const a = previous(context, rasterIdentities, nanHandlingMode, missingDataMode);
         const b = right(context, rasterIdentities, nanHandlingMode, missingDataMode);
         return {
@@ -271,7 +281,12 @@ class Parser {
       const operator = this.consume().value;
       const right = this.parsePower();
       const previous = left;
-      left = (context, rasterIdentities, nanHandlingMode, missingDataMode) => {
+      left = (
+        context: PixelContext,
+        rasterIdentities?: ReadonlyMap<string, string>,
+        nanHandlingMode?: NanHandlingMode,
+        missingDataMode?: MissingDataMode,
+      ) => {
         const a = previous(context, rasterIdentities, nanHandlingMode, missingDataMode);
         const b = right(context, rasterIdentities, nanHandlingMode, missingDataMode);
         const value =
@@ -291,7 +306,12 @@ class Parser {
     if (this.peekValue() !== '^') return left;
     this.consume();
     const right = this.parsePower();
-    return (context, rasterIdentities, nanHandlingMode, missingDataMode) => {
+    return (
+      context: PixelContext,
+      rasterIdentities?: ReadonlyMap<string, string>,
+      nanHandlingMode?: NanHandlingMode,
+      missingDataMode?: MissingDataMode,
+    ) => {
       const a = left(context, rasterIdentities, nanHandlingMode, missingDataMode);
       const b = right(context, rasterIdentities, nanHandlingMode, missingDataMode);
       return {
@@ -305,7 +325,12 @@ class Parser {
     if (this.peekValue() === '-') {
       this.consume();
       const value = this.parseUnary();
-      return (context, rasterIdentities, nanHandlingMode, missingDataMode) => {
+      return (
+        context: PixelContext,
+        rasterIdentities?: ReadonlyMap<string, string>,
+        nanHandlingMode?: NanHandlingMode,
+        missingDataMode?: MissingDataMode,
+      ) => {
         const result = value(context, rasterIdentities, nanHandlingMode, missingDataMode);
         return { value: -result.value, rasterReferences: result.rasterReferences };
       };
@@ -329,12 +354,15 @@ class Parser {
       }
       if (token.type === 'identifier')
         throw new Error(`Raster references must be quoted: "${token.value}".`);
-      return (context, rasterIdentities) => ({
-        value: context[token.value] ?? NaN,
-        rasterReferences: new Set([
-          rasterIdentities?.get(token.value) ?? token.value,
-        ]),
-      });
+      return (context: PixelContext, rasterIdentities?: ReadonlyMap<string, string>) => {
+        const rawValue = context[token.value];
+        return {
+          value: typeof rawValue === 'number' ? rawValue : NaN,
+          rasterReferences: new Set([
+            rasterIdentities?.get(token.value) ?? token.value,
+          ]),
+        };
+      };
     }
     if (token.value === '(') {
       const value = this.parseComparison();
@@ -353,7 +381,12 @@ class Parser {
       } while (this.consumeIf(','));
     }
     this.expectValue(')');
-    return (context, rasterIdentities, nanHandlingMode, missingDataMode) => {
+    return (
+      context: PixelContext,
+      rasterIdentities?: ReadonlyMap<string, string>,
+      nanHandlingMode?: NanHandlingMode,
+      missingDataMode?: MissingDataMode,
+    ) => {
       const results = args.map((argument) =>
         argument(context, rasterIdentities, nanHandlingMode, missingDataMode),
       );
@@ -485,15 +518,6 @@ function sampleNearest(
  *   Xgeo = originX + (col + 0.5) * scaleX
  *   Ygeo = originY + (row + 0.5) * scaleY
  */
-function alignedValues(
-  base: RasterSource,
-  target: RasterSource,
-  bandIndex: number = 0,
-): Float32Array {
-  const result = alignedValuesWithMissing(base, target, bandIndex);
-  return result.values;
-}
-
 function alignedValuesWithMissing(
   base: RasterSource,
   target: RasterSource,
@@ -657,9 +681,9 @@ export async function calculateRaster(
     const context: PixelContext = { __bboxMissing: {} as Record<string, boolean> };
     resolved.forEach(({ reference, raster }, refIndex) => {
       const value = alignedArrays[refIndex].values[i];
-      const noDataOverride = raster.noData ?? raster.source.noDataValue;
+      const noDataOverride = raster.noData != null ? raster.noData : undefined;
       const normalizedValue =
-        Number.isFinite(noDataOverride) && value === noDataOverride
+        typeof noDataOverride === 'number' && Number.isFinite(noDataOverride) && value === noDataOverride
           ? NaN
           : value;
       context[reference] = normalizedValue;

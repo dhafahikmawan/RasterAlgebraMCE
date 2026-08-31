@@ -173,14 +173,16 @@ This keeps the UI changes visible and the processing fix isolated.
 
 ## 8. Risk Control Checklist
 
-- [ ] The per-raster `NoData` field is optional and defaults safely.
-- [ ] The missing-data policy applies only to bounding-box-induced gaps, not uploaded NaNs.
-- [ ] The selected raster and policy are kept in the same form-local state.
-- [ ] Dropdowns are rebuilt when rasters are added or removed.
-- [ ] The default remains valid even when raster data changes.
-- [ ] The `Skip` behavior only bypasses a pixel when the missing side is caused by the bbox mismatch.
-- [ ] Existing behavior is preserved when the user chooses `NaN`.
-- [ ] Regression tests cover both the form and the processing logic.
+- [x] The per-raster `NoData` field is optional and defaults safely.
+- [x] The missing-data policy applies only to bounding-box-induced gaps, not uploaded NaNs.
+- [x] The selected raster and policy are kept in the same form-local state.
+- [x] Dropdowns are rebuilt when rasters are added or removed.
+- [x] The default remains valid even when raster data changes.
+- [x] The `Skip` behavior only bypasses a pixel when the missing side is caused by the bbox mismatch.
+- [x] Existing behavior is preserved when the user chooses `NaN`.
+- [x] Regression tests cover both the form and the processing logic.
+- [x] MCE exposes only `NaN` and `0` in its missing-data dropdown.
+- [x] Raster Algebra keeps the `Skip` option while the MCE workflow omits it.
 
 ---
 
@@ -208,9 +210,9 @@ npm run build
 ### Manual validation checklist
 
 1. Upload two rasters with different bounding boxes.
-2. Confirm the dropdown defaults to the current behavior (`NaN`) when no choice is made.
+2. Confirm the Raster Algebra dropdown defaults to the current behavior (`NaN`) when no choice is made, while MCE only shows `NaN` and `0`.
 3. Set the missing-data policy to `0` and verify the result is zero where the bbox introduces missing data.
-4. Set the missing-data policy to `Skip` and verify the operation keeps the existing value when the missing side is caused by bbox mismatch.
+4. In Raster Algebra, set the missing-data policy to `Skip` and verify the operation keeps the existing value when the missing side is caused by bbox mismatch.
 5. Confirm an actual raster NaN still follows the normal `NAN_HANDLING_MODE` behavior.
 6. Remove a raster and confirm the selector resets to a valid item without breaking the form.
 

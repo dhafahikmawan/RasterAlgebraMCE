@@ -5,15 +5,18 @@ import {
 import type { RasterSource } from '../utils/geotiff-processor.js';
 
 export type MceBandMode = "all" | "average" | "first";
+export type MceMissingDataMode = "NaN" | "0";
 
 export interface MceRasterInput {
     file: File;
     weight: number;
+    noData?: number | null;
 }
 
 export interface MceRasterProcessingOptions {
     bandMode?: MceBandMode;
     mode?: "before" | "after";
+    missingDataMode?: MceMissingDataMode;
 }
 
 export function calculateAhpWeights(matrix: number[][]): number[] {
@@ -94,15 +97,17 @@ function averageBands(
 async function processRaster(
     file: File,
     options: MceRasterProcessingOptions,
+    noDataOverride?: number | null,
 ): Promise<ProcessedRaster> {
     const source = await readRasterFromFile(file);
     const pixels = source.width * source.height;
     const bandMode = options.bandMode ?? "first";
     const averagingMode = options.mode === "after" ? "after" : "before";
     const raw = source.data;
+    const effectiveNoData = noDataOverride != null ? noDataOverride : source.noDataValue;
     const rawValid = new Uint8Array(raw.length);
     for (let index = 0; index < raw.length; index += 1) {
-        rawValid[index] = isValid(raw[index], source.noDataValue) ? 1 : 0;
+        rawValid[index] = isValid(raw[index], effectiveNoData) ? 1 : 0;
     }
 
     if (bandMode === "first") {
@@ -142,16 +147,28 @@ async function processRaster(
     return { ...source, data: averaged.values, valid: averaged.valid, bandCount: 1 };
 }
 
-function sampleRaster(raster: ProcessedRaster, x: number, y: number): number[] | null {
+function sampleRaster(
+    raster: ProcessedRaster,
+    x: number,
+    y: number,
+    missingDataMode?: MceMissingDataMode,
+): number[] | null {
     const [originX, scaleX, , originY, , scaleY] = raster.geotransform;
     const column = Math.round((x - originX) / scaleX - 0.5);
     const row = Math.round((y - originY) / scaleY - 0.5);
-    if (column < 0 || column >= raster.width || row < 0 || row >= raster.height) return null;
+    if (column < 0 || column >= raster.width || row < 0 || row >= raster.height) {
+        if (!missingDataMode) return null;
+        return Array.from({ length: raster.bandCount }, () => (missingDataMode === "NaN" ? Number.NaN : 0));
+    }
     const pixel = row * raster.width + column;
     const values: number[] = [];
     for (let band = 0; band < raster.bandCount; band += 1) {
         const index = pixel * raster.bandCount + band;
-        values.push(raster.valid[index] ? raster.data[index] : 0);
+        if (!raster.valid[index]) {
+            values.push(missingDataMode === "NaN" ? Number.NaN : 0);
+            continue;
+        }
+        values.push(raster.data[index]);
     }
     return values;
 }
@@ -164,7 +181,7 @@ export async function buildMceRaster(
     if (inputs.length === 0) throw new Error("At least one raster is required.");
     if (inputs.some((input) => !Number.isFinite(input.weight))) throw new Error("Raster weights must be finite numbers.");
 
-    const layers = await Promise.all(inputs.map((input) => processRaster(input.file, options)));
+    const layers = await Promise.all(inputs.map((input) => processRaster(input.file, options, input.noData ?? null)));
     const baseIndex = referenceRasterKey
         ? inputs.findIndex((input) => input.file.name === referenceRasterKey)
         : -1;
@@ -179,7 +196,7 @@ export async function buildMceRaster(
             for (let layerIndex = 0; layerIndex < layers.length; layerIndex += 1) {
                 const layer = layers[layerIndex];
                 if (layer.bandCount !== base.bandCount) throw new Error("All rasters must use the same band processing mode.");
-                const values = sampleRaster(layer, coordinateX, coordinateY);
+                const values = sampleRaster(layer, coordinateX, coordinateY, options.missingDataMode);
                 if (!values) continue;
                 for (let band = 0; band < base.bandCount; band += 1) combined[basePixel * base.bandCount + band] += values[band] * inputs[layerIndex].weight;
             }

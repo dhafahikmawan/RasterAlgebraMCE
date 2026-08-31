@@ -184,6 +184,19 @@ describe("calculateRaster – aligned rasters", () => {
 });
 
 describe("calculateRaster – mismatched extents (resampling)", () => {
+  it("defaults to the leftmost referenced raster when no explicit base is selected", async () => {
+    const leftmost = makeSource(2, 2, [1, 2, 3, 4], 0, 10, 1, -1);
+    const firstUploaded = makeSource(2, 2, [100, 200, 300, 400], 5, 15, 1, -1);
+    const leftRaster = makeRaster("right.tif", leftmost);
+    const uploadedRaster = makeRaster("left.tif", firstUploaded);
+    const expr = compileExpression('"right.tif" + "left.tif"');
+
+    const { warnings } = await calculateRaster([uploadedRaster, leftRaster], expr);
+
+    expect(warnings.some((warning) => warning.includes('"left.tif"'))).toBe(true);
+    expect(warnings.some((warning) => warning.includes('"right.tif"'))).toBe(false);
+  });
+
   it("emits a warning when extents differ", async () => {
     const base = makeSource(2, 2, [1, 2, 3, 4], 0, 10, 1, -1);
     // target covers a different area
