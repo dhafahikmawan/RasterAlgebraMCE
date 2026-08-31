@@ -195,6 +195,63 @@ describe("calculateRaster – mismatched extents (resampling)", () => {
     // The second raster requires resampling, so a warning should be present
     expect(warnings.length).toBeGreaterThan(0);
   });
+
+  it("uses the bbox-gap policy to convert missing pixels to zero", () => {
+    const expr = compileExpression('"a.tif" + "b.tif"');
+    const result = expr.evaluate?.(
+      {
+        'a.tif': 5,
+        'b.tif': NaN,
+        __bboxMissing: { 'b.tif': true },
+      },
+      new Map([
+        ['a.tif', 'a.tif'],
+        ['b.tif', 'b.tif'],
+      ]),
+      'DEFAULT',
+      '0',
+    );
+
+    expect(result?.value).toBe(5);
+  });
+
+  it("uses skip to keep the valid value when bbox-created data is missing", () => {
+    const expr = compileExpression('"a.tif" + "b.tif"');
+    const result = expr.evaluate?.(
+      {
+        'a.tif': 5,
+        'b.tif': NaN,
+        __bboxMissing: { 'b.tif': true },
+      },
+      new Map([
+        ['a.tif', 'a.tif'],
+        ['b.tif', 'b.tif'],
+      ]),
+      'DEFAULT',
+      'Skip',
+    );
+
+    expect(result?.value).toBe(5);
+  });
+
+  it("keeps true raster NaNs on the normal NAN_HANDLING_MODE path", () => {
+    const expr = compileExpression('"a.tif" + "b.tif"');
+    const result = expr.evaluate?.(
+      {
+        'a.tif': NaN,
+        'b.tif': 2,
+        __bboxMissing: {},
+      },
+      new Map([
+        ['a.tif', 'a.tif'],
+        ['b.tif', 'b.tif'],
+      ]),
+      'RASTER_PRIORITY',
+      'Skip',
+    );
+
+    expect(result?.value).toBe(2);
+  });
 });
 
 describe("calculateRaster – band references", () => {

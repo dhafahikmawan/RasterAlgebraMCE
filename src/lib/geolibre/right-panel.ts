@@ -111,6 +111,15 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
     boundingRasterSelector.name = 'raster-algebra-bounding-raster';
     applyRightPanelStyle(boundingRasterSelector, "methodSelect");
 
+    const missingDataLabel = document.createElement('label');
+    applyRightPanelStyle(missingDataLabel, "label");
+    missingDataLabel.textContent = 'Missing data handling';
+    const missingDataSelector = document.createElement('select');
+    missingDataSelector.name = 'raster-algebra-missing-data-mode';
+    applyRightPanelStyle(missingDataSelector, "methodSelect");
+    drawDropdownOptions(missingDataSelector, ['NaN', '0', 'Skip']);
+    missingDataSelector.value = 'Skip';
+
     const syncBoundingRasterSelector = () => {
       const entries = rasters.map((raster) => ({ key: raster.key, label: raster.key }));
       boundingRasterSelector.replaceChildren();
@@ -341,7 +350,13 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
       }
       status.textContent = 'Calculating…';
       calculateBtn.disabled = true;
-      calculateRaster(rasters, compiled, NAN_HANDLING_MODE, selectedBoundingRasterKey ?? undefined)
+      calculateRaster(
+        rasters,
+        compiled,
+        NAN_HANDLING_MODE,
+        selectedBoundingRasterKey ?? undefined,
+        missingDataSelector.value as 'NaN' | '0' | 'Skip',
+      )
         .then(({ blob, warnings }) => {
           // Revoke previous object URL to free memory
           //if (resultDownloadUrl) URL.revokeObjectURL(resultDownloadUrl);
@@ -377,6 +392,8 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
       rasterList,
       boundingRasterLabel,
       boundingRasterSelector,
+      missingDataLabel,
+      missingDataSelector,
       keyboardToggle,
       operationsContainer,
       expressionLabel,
@@ -420,6 +437,14 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
     const boundingRasterSelector = document.createElement("select");
     boundingRasterSelector.name = "mce-bounding-raster";
     applyRightPanelStyle(boundingRasterSelector, "methodSelect");
+    const missingDataLabel = document.createElement("label");
+    applyRightPanelStyle(missingDataLabel, "label");
+    missingDataLabel.textContent = "Missing data handling";
+    const missingDataSelector = document.createElement("select");
+    missingDataSelector.name = "mce-missing-data-mode";
+    applyRightPanelStyle(missingDataSelector, "methodSelect");
+    drawDropdownOptions(missingDataSelector, ["NaN", "0"]);
+    missingDataSelector.value = "NaN";
     const syncBoundingRasterSelector = () => {
       const entries = inputs
         .map((input, index) => (input.file ? { key: input.file.name, label: `Raster ${index + 1}` } : null))

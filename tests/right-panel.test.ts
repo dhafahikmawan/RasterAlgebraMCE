@@ -109,6 +109,28 @@ describe("registerTemplateRightPanel", () => {
     expect(container.firstElementChild?.style.boxSizing).toBe("border-box");
   });
 
+  it("renders the missing-data policy selector after the bounding raster selector", () => {
+    const { app, getRegistered } = createApp();
+    registerTemplateRightPanel(app);
+
+    const panel = getRegistered();
+    const container = document.createElement("div");
+    panel?.render(container);
+
+    const method = container.querySelector<HTMLSelectElement>("select");
+    method!.value = "Raster Algebra";
+    method!.dispatchEvent(new Event("change"));
+
+    const boundingSelector = container.querySelector<HTMLSelectElement>('select[name="raster-algebra-bounding-raster"]');
+    const missingDataSelector = container.querySelector<HTMLSelectElement>('select[name="raster-algebra-missing-data-mode"]');
+
+    expect(boundingSelector).not.toBeNull();
+    expect(missingDataSelector).not.toBeNull();
+    expect(Array.from(missingDataSelector!.options).map((option) => option.value)).toEqual(["NaN", "0", "Skip"]);
+    expect(missingDataSelector!.value).toBe("Skip");
+    expect(boundingSelector!.compareDocumentPosition(missingDataSelector!)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+  });
+
   it("styles MCE controls and preserves dynamic visibility", () => {
     const { app, getRegistered } = createApp();
     registerTemplateRightPanel(app);
