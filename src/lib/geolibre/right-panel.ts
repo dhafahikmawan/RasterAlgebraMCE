@@ -128,7 +128,7 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
       boundingRasterSelector.replaceChildren();
       const emptyOption = document.createElement('option');
       emptyOption.value = '';
-      emptyOption.textContent = 'No raster loaded';
+      emptyOption.textContent = 'Default';
       applyRightPanelStyle(emptyOption, 'selectOption');
       boundingRasterSelector.appendChild(emptyOption);
       if (entries.length === 0) {
