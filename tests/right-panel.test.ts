@@ -124,9 +124,10 @@ describe("registerTemplateRightPanel", () => {
     const file = container.querySelector<HTMLInputElement>('input[type="file"]');
     const weight = container.querySelector<HTMLInputElement>('input[type="number"]');
     const ahpToggle = container.querySelector<HTMLInputElement>('input[type="checkbox"]');
-    const ahpContainer = container.querySelector<HTMLElement>(".right-panel-ahpContainer");
+    const ahpContainer = container.querySelector<HTMLElement>(".spazio-ahp-container");
     const averageRadio = container.querySelector<HTMLInputElement>('input[value="average"]');
-    const averagingGroup = container.querySelector<HTMLElement>(".right-panel-averagingGroup");
+    const averagingGroup = container.querySelector<HTMLElement>(".spazio-averaging-group");
+    const boundingSelector = container.querySelector<HTMLSelectElement>('select[name="mce-bounding-raster"]');
 
     expect(count?.type).toBe("range");
     expect(count?.style.accentColor).toBe("rgb(29, 78, 216)");
@@ -137,11 +138,17 @@ describe("registerTemplateRightPanel", () => {
     expect(ahpToggle?.type).toBe("checkbox");
     expect(ahpContainer?.style.display).toBe("none");
     expect(averagingGroup?.style.display).toBe("none");
+    expect(boundingSelector).not.toBeNull();
+    expect(boundingSelector?.options.length).toBeGreaterThan(0);
+    expect(boundingSelector?.value).toBe(boundingSelector?.options[0]?.value);
 
     ahpToggle!.checked = true;
     ahpToggle!.dispatchEvent(new Event("change"));
     expect(ahpContainer?.style.display).toBe("flex");
     expect(ahpContainer?.querySelector("table")).not.toBeNull();
+    const disabledAhpCell = ahpContainer?.querySelector<HTMLInputElement>('input[data-row="1"][data-col="0"]');
+    expect(disabledAhpCell?.disabled).toBe(true);
+    expect(disabledAhpCell?.classList.contains("spazio-ahp-input-disabled")).toBe(true);
 
     averageRadio!.checked = true;
     averageRadio!.dispatchEvent(new Event("change"));

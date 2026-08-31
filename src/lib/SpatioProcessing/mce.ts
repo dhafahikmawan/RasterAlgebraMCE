@@ -159,12 +159,16 @@ function sampleRaster(raster: ProcessedRaster, x: number, y: number): number[] |
 export async function buildMceRaster(
     inputs: MceRasterInput[],
     options: MceRasterProcessingOptions = {},
+    referenceRasterKey?: string,
 ): Promise<Blob> {
     if (inputs.length === 0) throw new Error("At least one raster is required.");
     if (inputs.some((input) => !Number.isFinite(input.weight))) throw new Error("Raster weights must be finite numbers.");
 
     const layers = await Promise.all(inputs.map((input) => processRaster(input.file, options)));
-    const base = layers[0];
+    const baseIndex = referenceRasterKey
+        ? inputs.findIndex((input) => input.file.name === referenceRasterKey)
+        : -1;
+    const base = layers[baseIndex >= 0 ? baseIndex : 0];
     const combined = new Float32Array(base.width * base.height * base.bandCount);
     for (let row = 0; row < base.height; row += 1) {
         for (let column = 0; column < base.width; column += 1) {

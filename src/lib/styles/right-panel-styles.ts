@@ -220,6 +220,12 @@ export const RIGHT_PANEL_STYLES = {
     borderRadius: "4px",
     font: "inherit",
   },
+  ahpInputDisabled: {
+    backgroundColor: "#e2e8f0",
+    color: "#64748b",
+    borderColor: "#cbd5e1",
+    cursor: "not-allowed",
+  },
   ahpButton: {
     alignSelf: "flex-start",
   },
@@ -276,6 +282,54 @@ export const RIGHT_PANEL_STYLES = {
   },
 } as const;
 
+const STYLE_CLASS_ALIASES = {
+  panel: "spazio-container",
+  heading: "spazio-title",
+  description: "spazio-description",
+  text: "spazio-text",
+  formContainer: "spazio-form-container",
+  status: "spazio-status",
+  label: "spazio-input-label",
+  input: "spazio-text-field",
+  expression: "spazio-expression-field",
+  methodSelect: "spazio-dropdown",
+  range: "spazio-slider",
+  checkbox: "spazio-checkbox",
+  radio: "spazio-radio",
+  output: "spazio-output",
+  selectOption: "spazio-dropdown-options",
+  button: "spazio-button",
+  operationButton: "spazio-calculator-button",
+  downloadButton: "spazio-submit-button",
+  rasterList: "spazio-raster-list",
+  rasterRow: "spazio-raster-row",
+  rasterControls: "spazio-raster-controls",
+  rasterBands: "spazio-raster-bands",
+  operations: "spazio-operations",
+  operationsGrid: "spazio-operations-grid",
+  operationRow: "spazio-operation-row",
+  countGroup: "spazio-count-group",
+  mceRows: "spazio-mce-rows",
+  mceRow: "spazio-mce-row",
+  mceWeightInput: "spazio-mce-weight-input",
+  ahpLabel: "spazio-ahp-label",
+  ahpContainer: "spazio-ahp-container",
+  ahpInput: "spazio-ahp-input",
+  ahpInputDisabled: "spazio-ahp-input-disabled",
+  ahpButton: "spazio-ahp-button",
+  table: "spazio-ahp-table",
+  tableRow: "spazio-ahp-table-row",
+  tableHeader: "spazio-ahp-headers",
+  tableCell: "spazio-ahp-cell",
+  fieldset: "spazio-fieldset",
+  legend: "spazio-legend",
+  radioLabel: "spazio-radio-label",
+  averagingGroup: "spazio-averaging-group",
+  hidden: "spazio-hidden",
+  visibleFlex: "spazio-visible-flex",
+  visibleGrid: "spazio-visible-grid",
+} as const;
+
 export type RightPanelStyleName = keyof typeof RIGHT_PANEL_STYLES;
 
 export function applyRightPanelStyle(
@@ -283,6 +337,7 @@ export function applyRightPanelStyle(
   styleName: RightPanelStyleName,
 ): void {
   const styles = RIGHT_PANEL_STYLES[styleName];
-  element.classList.add(`right-panel-${styleName}`);
+  const className = STYLE_CLASS_ALIASES[styleName] ?? `spazio-${String(styleName).replace(/[A-Z]/g, (match) => `-${match.toLowerCase()}`)}`;
+  element.classList.add(className);
   Object.assign(element.style, styles);
 }

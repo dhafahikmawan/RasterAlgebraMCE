@@ -54,6 +54,12 @@ export function registerTemplateToolbarMenu<TControl extends GeoLibreControl>(
         onSelect: () => app.openRightPanel?.(RIGHT_PANEL_ID),
       },
       {
+        id: "open-floating",
+        label: "Open floating tools",
+        disabled: !app.openFloatingPanel,
+        onSelect: () => app.openFloatingPanel?.(FLOATING_PANEL_ID),
+      },
+      {
         type: "submenu",
         id: "tools",
         label: "Tools",

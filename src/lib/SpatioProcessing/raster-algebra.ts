@@ -554,6 +554,7 @@ export async function calculateRaster(
   rasters: RasterInput[],
   expression: CompiledExpression,
   nanHandlingMode?: 'DEFAULT' | 'RASTER_PRIORITY',
+  referenceRasterKey?: string,
 ): Promise<RasterCalculationResult> {
   if (rasters.length === 0) throw new Error('No raster is being processed.');
   const references = expression.references ?? new Set<string>();
@@ -561,7 +562,10 @@ export async function calculateRaster(
     throw new Error('Expression does not reference an uploaded raster.');
 
   const resolved = [...references].map((ref) => resolveReference(ref, rasters));
-  const base = resolved[0].raster.source;
+  const baseRaster = referenceRasterKey
+    ? resolved.find(({ raster }) => raster.key === referenceRasterKey) ?? resolved[0]
+    : resolved[0];
+  const base = baseRaster.raster.source;
 
   // CRS check
   const crsMismatch = resolved.find(

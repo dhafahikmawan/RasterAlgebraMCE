@@ -38,7 +38,7 @@ export function registerTemplateFloatingPanel<TControl extends GeoLibreControl>(
       wrap.className = "geolibre-plugin-floating-panel";
 
       const heading = document.createElement("h2");
-      heading.textContent = "RA & MCE Tools";
+      heading.textContent = "Floating Tools";
 
       const body = document.createElement("p");
       body.textContent =

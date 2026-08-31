@@ -73,6 +73,7 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
     let resultDownloadUrl: string | null = null;
     let expressionSelectionStart = 0;
     let expressionSelectionEnd = 0;
+    let selectedBoundingRasterKey: string | null = null;
 
     const NAN_HANDLING_MODE: 'DEFAULT' | 'RASTER_PRIORITY' = 'DEFAULT';
     const OPERATIONS = [
@@ -102,6 +103,42 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
     // ── Raster list container ──────────────────────────────────────────────
     const rasterList = document.createElement('div');
     applyRightPanelStyle(rasterList, "rasterList");
+
+    const boundingRasterLabel = document.createElement('label');
+    applyRightPanelStyle(boundingRasterLabel, "label");
+    boundingRasterLabel.textContent = 'Bounding box raster';
+    const boundingRasterSelector = document.createElement('select');
+    boundingRasterSelector.name = 'raster-algebra-bounding-raster';
+    applyRightPanelStyle(boundingRasterSelector, "methodSelect");
+
+    const syncBoundingRasterSelector = () => {
+      const entries = rasters.map((raster) => ({ key: raster.key, label: raster.key }));
+      boundingRasterSelector.replaceChildren();
+      const emptyOption = document.createElement('option');
+      emptyOption.value = '';
+      emptyOption.textContent = 'No raster loaded';
+      applyRightPanelStyle(emptyOption, 'selectOption');
+      boundingRasterSelector.appendChild(emptyOption);
+      if (entries.length === 0) {
+        boundingRasterSelector.disabled = true;
+        selectedBoundingRasterKey = null;
+        boundingRasterSelector.value = '';
+        return;
+      }
+      entries.forEach(({ key, label }) => {
+        const option = document.createElement('option');
+        applyRightPanelStyle(option, 'selectOption');
+        option.value = key;
+        option.textContent = label;
+        boundingRasterSelector.appendChild(option);
+      });
+      const validValue = entries.some((entry) => entry.key === selectedBoundingRasterKey)
+        ? selectedBoundingRasterKey ?? entries[0].key
+        : entries[0].key;
+      selectedBoundingRasterKey = validValue;
+      boundingRasterSelector.value = validValue;
+      boundingRasterSelector.disabled = false;
+    };
 
     // ── Keyboard toggle ────────────────────────────────────────────────────
     const keyboardToggle = document.createElement('button');
@@ -170,7 +207,7 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
     // ── Download link ──────────────────────────────────────────────────────
     const downloadLink = document.createElement('a');
     applyRightPanelStyle(downloadLink, "downloadButton");
-    downloadLink.textContent = 'Download Latest Result';
+    downloadLink.textContent = 'Download Result';
     downloadLink.download = 'raster-algebra-result.tif';
     downloadLink.setAttribute('aria-disabled', 'true');
     downloadLink.tabIndex = -1;
@@ -251,6 +288,7 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
         row.append(label, controls);
         rasterList.appendChild(row);
       });
+      syncBoundingRasterSelector();
     };
 
     // ── File upload handler ────────────────────────────────────────────────
@@ -275,6 +313,7 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
             }
           });
           renderRasterList();
+          syncBoundingRasterSelector();
           status.textContent = `${rasters.length} raster(s) loaded.`;
         })
         .catch((err: unknown) => {
@@ -302,7 +341,7 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
       }
       status.textContent = 'Calculating…';
       calculateBtn.disabled = true;
-      calculateRaster(rasters, compiled, NAN_HANDLING_MODE)
+      calculateRaster(rasters, compiled, NAN_HANDLING_MODE, selectedBoundingRasterKey ?? undefined)
         .then(({ blob, warnings }) => {
           // Revoke previous object URL to free memory
           //if (resultDownloadUrl) URL.revokeObjectURL(resultDownloadUrl);
@@ -331,10 +370,13 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
     });
 
     // ── Assemble and append ────────────────────────────────────────────────
+    syncBoundingRasterSelector();
     wrapper.append(
       status,
       uploader,
       rasterList,
+      boundingRasterLabel,
+      boundingRasterSelector,
       keyboardToggle,
       operationsContainer,
       expressionLabel,
@@ -349,6 +391,7 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
     const rowWeightControls: Array<{ number: HTMLInputElement; slider: HTMLInputElement }> = [];
     let ahpMatrix: number[][] = [];
     let selectedBandMode: MceBandMode = "first";
+    let selectedBoundingRasterKey: string | null = null;
     let resultUrl: string | null = null;
 
     const status = document.createElement("p");
@@ -371,6 +414,42 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
 
     const rows = document.createElement("div");
     applyRightPanelStyle(rows, "mceRows");
+    const boundingRasterLabel = document.createElement("label");
+    applyRightPanelStyle(boundingRasterLabel, "label");
+    boundingRasterLabel.textContent = "Bounding box raster";
+    const boundingRasterSelector = document.createElement("select");
+    boundingRasterSelector.name = "mce-bounding-raster";
+    applyRightPanelStyle(boundingRasterSelector, "methodSelect");
+    const syncBoundingRasterSelector = () => {
+      const entries = inputs
+        .map((input, index) => (input.file ? { key: input.file.name, label: `Raster ${index + 1}` } : null))
+        .filter((entry): entry is { key: string; label: string } => entry !== null);
+      boundingRasterSelector.replaceChildren();
+      const emptyOption = document.createElement("option");
+      emptyOption.value = "";
+      emptyOption.textContent = "No raster loaded";
+      applyRightPanelStyle(emptyOption, "selectOption");
+      boundingRasterSelector.appendChild(emptyOption);
+      if (entries.length === 0) {
+        boundingRasterSelector.disabled = true;
+        selectedBoundingRasterKey = null;
+        boundingRasterSelector.value = "";
+        return;
+      }
+      entries.forEach(({ key, label }) => {
+        const option = document.createElement("option");
+        applyRightPanelStyle(option, "selectOption");
+        option.value = key;
+        option.textContent = label;
+        boundingRasterSelector.appendChild(option);
+      });
+      const validValue = entries.some((entry) => entry.key === selectedBoundingRasterKey)
+        ? selectedBoundingRasterKey ?? entries[0].key
+        : entries[0].key;
+      selectedBoundingRasterKey = validValue;
+      boundingRasterSelector.value = validValue;
+      boundingRasterSelector.disabled = false;
+    };
     const ahpToggle = document.createElement("input");
     ahpToggle.type = "checkbox";
     ahpToggle.name = "mce-use-ahp";
@@ -469,10 +548,13 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
         for (let column = 0; column < count; column += 1) {
           const cell = document.createElement("td");
           applyRightPanelStyle(cell, "tableCell");
-          const input = document.createElement("input");
+              const input = document.createElement("input");
           applyRightPanelStyle(input, "ahpInput");
           input.value = ahpMatrix[row][column].toFixed(2);
           input.disabled = row >= column;
+          if (row >= column) {
+            applyRightPanelStyle(input, "ahpInputDisabled");
+          }
           input.type = row < column ? "number" : "text";
           input.dataset.row = String(row);
           input.dataset.col = String(column);
@@ -532,7 +614,7 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
         file.type = "file";
         file.accept = ".tif,.tiff,image/tiff";
         applyRightPanelStyle(file, "input");
-        file.addEventListener("change", () => { inputs[index].file = file.files?.[0] ?? null; updateCalculateState(); });
+        file.addEventListener("change", () => { inputs[index].file = file.files?.[0] ?? null; updateCalculateState(); syncBoundingRasterSelector(); });
         const number = document.createElement("input");
         number.type = "number";
         applyRightPanelStyle(number, "mceWeightInput");
@@ -555,6 +637,7 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
       }
       resizeMatrix(count);
       updateCalculateState();
+      syncBoundingRasterSelector();
       renderAhp();
     };
     ahpToggle.addEventListener("change", renderAhp);
@@ -571,7 +654,7 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
         const blob = await buildMceRaster(entries as Array<{ file: File; weight: number }>, {
           bandMode: selectedBandMode,
           mode: averagingMode.value === "after" ? "after" : "before",
-        });
+        }, selectedBoundingRasterKey ?? undefined);
         if (resultUrl) URL.revokeObjectURL(resultUrl);
         resultUrl = URL.createObjectURL(blob);
         await _app.addCogLayer?.("Plugin-MCE-Raster", resultUrl, { opacity: 1, colormap: "terrain", rescaleMin: 0, rescaleMax: 1, bands: "1" });
@@ -587,7 +670,7 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
       }
     });
     renderRows();
-    wrapper.append(status, countGroup, ahpLabel, ahpContainer, rows, bandGroup, averagingGroup, calculateButton, downloadLink);
+    wrapper.append(status, countGroup, rows, boundingRasterLabel, boundingRasterSelector, ahpLabel, ahpContainer, bandGroup, averagingGroup, calculateButton, downloadLink);
   }
 }
 
@@ -627,7 +710,7 @@ export function registerTemplateRightPanel<TControl extends GeoLibreControl>(
       //Description
       const heading = document.createElement("h2");
       applyRightPanelStyle(heading, "heading");
-      heading.textContent = "Raster Algebra & MCE Workbench";
+      heading.textContent = "Plugin Workbench";
 
       //Method Select
       const method = document.createElement("select");
@@ -663,7 +746,7 @@ export function registerTemplateRightPanel<TControl extends GeoLibreControl>(
   // Open it right away so the example is visible on activation. Remove this call
   // (or gate it behind a button in your control) if you would rather open the
   // panel on demand instead of every time the plugin activates.
-  //app.openRightPanel?.(RIGHT_PANEL_ID);
+  app.openRightPanel?.(RIGHT_PANEL_ID);
 
   return () => {
     app.closeRightPanel?.(RIGHT_PANEL_ID);
