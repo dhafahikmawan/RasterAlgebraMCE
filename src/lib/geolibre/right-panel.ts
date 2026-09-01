@@ -32,7 +32,9 @@ export const ENABLE_DOWNLOAD = true;
 /** Stable id for this plugin's right panel. Replace with your own. */
 export const RIGHT_PANEL_ID = "spatio-ra-mce-panel";
 export const BASE_METHODS = ["", "Raster Algebra", "Multi Criteria Evaluation"];
+// {lang:id} Workbench Raster Algebra & MCE ["", "Aljabar Raster", "Evaluasi Beberapa Kriteria"]
 export const BASE_METHODS_TC = ["Select Processing Function", "Raster Algebra", "Multi Criteria Evaluation"];
+// {lang:id} ["Pilih fungsi Pemprosesan", "Aljabar Raster", "Evaluasi Beberapa Kriteria"]
 
 let _app : GeoLibreAppAPI;
 let _method : HTMLSelectElement;
@@ -544,8 +546,11 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
     bandGroup.appendChild(bandLegend);
     ([
       ["first", "Process only the first band"],
+      // {lang:id} ["Pertama", "Memproses hanya band pertama"]
       ["all", "Process all bands"],
+      // {lang:id} ["Semua", Memproses semua band]
       ["average", "Average bands to one band"],
+      // {lang:id} Merata-rata semua band
     ] as Array<[MceBandMode, string]>).forEach(([value, labelText]) => {
       const label = document.createElement("label");
       applyRightPanelStyle(label, "radioLabel");
@@ -570,6 +575,7 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
     // {lang:id} Menghitung rata-rata semua band
     const averagingMode = document.createElement("select");
     drawDropdownOptions(averagingMode, ["before", "after"], ["Before normalization", "After normalization"]);
+    // ["Sebelum", "Sesudah"], ["Sebleum Normalisasi", "Sesudah Normalisasi"]
     applyRightPanelStyle(averagingMode, "methodSelect");
     averagingGroup.appendChild(averagingMode);
     setRightPanelVisibility(averagingGroup, "hidden");
