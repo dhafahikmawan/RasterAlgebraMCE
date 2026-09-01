@@ -1,0 +1,487 @@
+export type RightPanelStyle = Partial<CSSStyleDeclaration>;
+
+export const RIGHT_PANEL_STYLES = {
+  panel: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "12px",
+    boxSizing: "border-box",
+    padding: "16px",
+    backgroundColor: "#ffffff",
+    color: "#111827",
+    border: "1px solid #d1d5db",
+    boxShadow: "0 2px 8px rgba(17, 24, 39, 0.12)",
+    fontSize: "13px",
+    lineHeight: "1.5",
+    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+  },
+  heading: {
+    margin: "0",
+    color: "#0f172a",
+    fontSize: "16px",
+    fontWeight: "600",
+  },
+  description: {
+    margin: "0",
+    color: "#475569",
+    fontSize: "12px",
+    lineHeight: "1.4",
+  },
+  text: {
+    color: "#334155",
+    fontSize: "13px",
+  },
+  formContainer: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "10px",
+  },
+  status: {
+    color: "#4b5563",
+    fontSize: "12px",
+    overflowWrap: "break-word",
+  },
+  label: {
+    display: "block",
+    marginBottom: "4px",
+    color: "#374151",
+    fontSize: "12px",
+    fontWeight: "500",
+  },
+  input: {
+    boxSizing: "border-box",
+    width: "100%",
+    minHeight: "36px",
+    padding: "8px 10px",
+    border: "1px solid #b8c1cc",
+    borderRadius: "4px",
+    outline: "none",
+    backgroundColor: "#ffffff",
+    color: "#111827",
+    fontSize: "14px",
+    fontFamily: "inherit",
+  },
+  expression: {
+    boxSizing: "border-box",
+    width: "100%",
+    minHeight: "96px",
+    padding: "8px 10px",
+    border: "1px solid #b8c1cc",
+    borderRadius: "4px",
+    backgroundColor: "#ffffff",
+    color: "#111827",
+    fontFamily: "monospace",
+    resize: "vertical",
+  },
+  methodSelect: {
+    boxSizing: "border-box",
+    width: "100%",
+    minHeight: "36px",
+    padding: "8px 10px",
+    border: "1px solid #b8c1cc",
+    borderRadius: "4px",
+    outline: "none",
+    backgroundColor: "#ffffff",
+    color: "#111827",
+    fontSize: "14px",
+    fontFamily: "inherit",
+  },
+  range: {
+    width: "100%",
+    accentColor: "#1d4ed8",
+    flex: "1 1 auto",
+    minWidth: "0",
+  },
+  checkbox: {
+    width: "16px",
+    height: "16px",
+    accentColor: "#1d4ed8",
+    cursor: "pointer",
+  },
+  radio: {
+    accentColor: "#1d4ed8",
+    cursor: "pointer",
+  },
+  output: {
+    color: "#0f172a",
+    fontWeight: "600",
+  },
+  selectOption: {
+    backgroundColor: "#ffffff",
+    color: "#000000",
+  },
+  button: {
+    boxSizing: "border-box",
+    minHeight: "36px",
+    padding: "8px 14px",
+    border: "1px solid #6b7280",
+    borderRadius: "4px",
+    backgroundColor: "#4b5563",
+    color: "#ffffff",
+    cursor: "pointer",
+    fontSize: "14px",
+    fontWeight: "500",
+  },
+  operationButton: {
+    boxSizing: "border-box",
+    minHeight: "36px",
+    padding: "8px 14px",
+    border: "1px solid #1d4ed8",
+    borderRadius: "4px",
+    backgroundColor: "#2563eb",
+    color: "#ffffff",
+    cursor: "pointer",
+    fontSize: "14px",
+    fontWeight: "600",
+    textAlign: "center",
+  },
+  downloadButton: {
+    boxSizing: "border-box",
+    minHeight: "36px",
+    padding: "8px 14px",
+    border: "1px solid #1d4ed8",
+    borderRadius: "4px",
+    backgroundColor: "#2563eb",
+    color: "#ffffff",
+    cursor: "pointer",
+    fontSize: "14px",
+    fontWeight: "600",
+    textAlign: "center",
+  },
+  layerList: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "6px",
+  },
+  layerCard: {
+    boxSizing: "border-box",
+    padding: "8px 12px",
+    border: "1px solid #d1d5db",
+    borderRadius: "4px",
+    backgroundColor: "#f9fafb",
+    boxShadow: "0 1px 2px rgba(17, 24, 39, 0.08)",
+  },
+  checkLabel: {
+    overflow: "hidden",
+    color: "#111827",
+    fontSize: "12px",
+    fontWeight: "500",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+    cursor: "pointer",
+    userSelect: "none",
+  },
+  layerSubform: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "8px",
+    marginTop: "8px",
+    paddingTop: "8px",
+    borderTop: "1px solid #d1d5db",
+  },
+  wdSliderControl: {
+    display: "flex",
+    gap: "8px",
+    alignItems: "center",
+    width: "100%",
+    boxSizing: "border-box",
+  },
+  wdNumberInput: {
+    boxSizing: "border-box",
+    width: "82px",
+    minWidth: "82px",
+    maxWidth: "82px",
+    minHeight: "36px",
+    padding: "6px 8px",
+    border: "1px solid #b8c1cc",
+    borderRadius: "4px",
+    outline: "none",
+    backgroundColor: "#ffffff",
+    color: "#111827",
+    fontSize: "13px",
+    textAlign: "right",
+    flex: "0 0 82px",
+  },
+  wdStatsGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" },
+  wdStatItem: { padding: "8px", border: "1px solid #d1d5db", borderRadius: "4px", backgroundColor: "#f9fafb" },
+  wdStatLabel: { display: "block", color: "#6b7280", fontSize: "11px" },
+  wdStatValue: { display: "block", color: "#111827", fontSize: "14px", fontWeight: "600" },
+  wdProgress: { padding: "8px", backgroundColor: "#eff6ff", color: "#1e3a8a", fontSize: "12px" },
+  wdBadge: { display: "inline-block", padding: "3px 8px", borderRadius: "999px", backgroundColor: "#e5e7eb", color: "#374151", fontSize: "11px", fontWeight: "600" },
+  wdBadgeOk: { backgroundColor: "#dcfce7", color: "#166534" },
+  wdBadgeError: { backgroundColor: "#fee2e2", color: "#991b1b" },
+  wdBadgeRunning: { backgroundColor: "#dbeafe", color: "#1e40af" },
+  rasterList: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "8px",
+  },
+  rasterRow: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "8px",
+    padding: "10px",
+    backgroundColor: "#ffffff",
+    border: "1px solid #cbd5e1",
+    borderRadius: "4px",
+  },
+  rasterControls: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "8px",
+  },
+  rasterBands: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "6px",
+  },
+  operations: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "6px",
+    padding: "8px",
+    backgroundColor: "#e2e8f0",
+    border: "1px solid #cbd5e1",
+    borderRadius: "4px",
+  },
+  operationsGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(4, 1fr)",
+    gap: "6px",
+    padding: "8px",
+    backgroundColor: "#e2e8f0",
+    border: "1px solid #cbd5e1",
+    borderRadius: "4px",
+  },
+  operationRow: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "6px",
+  },
+  countGroup: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "4px",
+  },
+  mceRows: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "8px",
+  },
+  mceRow: {
+    display: "grid",
+    gap: "6px",
+    padding: "10px",
+    backgroundColor: "#ffffff",
+    border: "1px solid #cbd5e1",
+    borderRadius: "4px",
+  },
+  mceWeightInput: {
+    boxSizing: "border-box",
+    minHeight: "36px",
+    padding: "8px 10px",
+    color: "#111827",
+    backgroundColor: "#ffffff",
+    border: "1px solid #b8c1cc",
+    borderRadius: "4px",
+    font: "inherit",
+  },
+  ahpLabel: {
+    display: "flex",
+    alignItems: "center",
+    gap: "6px",
+    color: "#334155",
+    fontWeight: "500",
+  },
+  ahpContainer: {
+    flexDirection: "column",
+    gap: "8px",
+    overflowX: "auto",
+  },
+  ahpInput: {
+    boxSizing: "border-box",
+    width: "72px",
+    minHeight: "32px",
+    padding: "6px",
+    color: "#111827",
+    backgroundColor: "#ffffff",
+    border: "1px solid #b8c1cc",
+    borderRadius: "4px",
+    font: "inherit",
+  },
+  ahpInputDisabled: {
+    backgroundColor: "#e2e8f0",
+    color: "#64748b",
+    borderColor: "#cbd5e1",
+    cursor: "not-allowed",
+  },
+  ahpButton: {
+    alignSelf: "flex-start",
+  },
+  table: {
+    borderCollapse: "collapse",
+    width: "100%",
+  },
+  tableRow: {
+    borderBottom: "1px solid #e2e8f0",
+  },
+  tableHeader: {
+    padding: "6px",
+    color: "#334155",
+    fontWeight: "600",
+    textAlign: "left",
+  },
+  tableCell: {
+    padding: "6px",
+    color: "#334155",
+  },
+  fieldset: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "6px",
+    margin: "0",
+    padding: "10px",
+    border: "1px solid #cbd5e1",
+    borderRadius: "4px",
+  },
+  legend: {
+    padding: "0 4px",
+    color: "#334155",
+    fontWeight: "600",
+  },
+  radioLabel: {
+    display: "flex",
+    alignItems: "center",
+    gap: "6px",
+    color: "#334155",
+  },
+  averagingGroup: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "4px",
+  },
+  hidden: { display: "none" },
+  visibleFlex: { display: "flex" },
+  visibleGrid: { display: "grid" },
+} as const;
+
+const STYLE_CLASS_ALIASES = {
+  panel: "spazio-container",
+  heading: "spazio-title",
+  description: "spazio-description",
+  text: "spazio-text",
+  formContainer: "spazio-form-container",
+  status: "spazio-status",
+  label: "spazio-input-label",
+  input: "spazio-text-field",
+  expression: "spazio-expression-field",
+  methodSelect: "spazio-dropdown",
+  range: "spazio-slider",
+  checkbox: "spazio-checkbox",
+  radio: "spazio-radio",
+  output: "spazio-output",
+  selectOption: "spazio-dropdown-options",
+  button: "spazio-button",
+  operationButton: "spazio-submit-button",
+  downloadButton: "spazio-submit-button",
+  layerList: "spazio-layer-list",
+  layerCard: "spazio-layer-card",
+  checkLabel: "spazio-check-label",
+  layerSubform: "spazio-layer-subform",
+  wdSliderControl: "spazio-wd-slider-control",
+  wdNumberInput: "spazio-wd-number-input",
+  wdStatsGrid: "spazio-wd-stats-grid",
+  wdStatItem: "spazio-wd-stat-item",
+  wdStatLabel: "spazio-wd-stat-label",
+  wdStatValue: "spazio-wd-stat-value",
+  wdProgress: "spazio-wd-progress",
+  wdBadge: "spazio-wd-badge",
+  wdBadgeOk: "spazio-wd-badge-ok",
+  wdBadgeError: "spazio-wd-badge-error",
+  wdBadgeRunning: "spazio-wd-badge-running",
+  rasterList: "spazio-raster-list",
+  rasterRow: "spazio-raster-row",
+  rasterControls: "spazio-raster-controls",
+  rasterBands: "spazio-raster-bands",
+  operations: "spazio-operations",
+  operationsGrid: "spazio-operations-grid",
+  operationRow: "spazio-operation-row",
+  countGroup: "spazio-count-group",
+  mceRows: "spazio-mce-rows",
+  mceRow: "spazio-mce-row",
+  mceWeightInput: "spazio-mce-weight-input",
+  ahpLabel: "spazio-ahp-label",
+  ahpContainer: "spazio-ahp-container",
+  ahpInput: "spazio-ahp-input",
+  ahpInputDisabled: "spazio-ahp-input-disabled",
+  ahpButton: "spazio-ahp-button",
+  table: "spazio-ahp-table",
+  tableRow: "spazio-ahp-table-row",
+  tableHeader: "spazio-ahp-headers",
+  tableCell: "spazio-ahp-cell",
+  fieldset: "spazio-fieldset",
+  legend: "spazio-legend",
+  radioLabel: "spazio-radio-label",
+  averagingGroup: "spazio-averaging-group",
+  hidden: "spazio-hidden",
+  visibleFlex: "spazio-visible-flex",
+  visibleGrid: "spazio-visible-grid",
+} as const;
+
+export type RightPanelStyleName = keyof typeof RIGHT_PANEL_STYLES;
+
+export function applyRightPanelStyle(
+  element: HTMLElement,
+  styleName: RightPanelStyleName,
+): void {
+  const styles = RIGHT_PANEL_STYLES[styleName];
+  const className = STYLE_CLASS_ALIASES[styleName] ?? `spazio-${String(styleName).replace(/[A-Z]/g, (match) => `-${match.toLowerCase()}`)}`;
+  element.classList.add(className);
+  Object.assign(element.style, styles);
+}
+
+export function applyRightPanelStyles(
+  element: HTMLElement | SVGElement,
+  ...styleNames: Array<RightPanelStyleName | string>
+): void {
+  for (const styleName of styleNames) {
+    const key = styleName as RightPanelStyleName;
+    if (RIGHT_PANEL_STYLES[key]) {
+      applyRightPanelStyle(element as HTMLElement, key);
+    }
+  }
+}
+
+export function styleRightPanelTree(root: HTMLElement): void {
+  const queue = [root];
+  while (queue.length) {
+    const current = queue.shift()!;
+    const classNames = current.className ? String(current.className).split(/\s+/).filter(Boolean) : [];
+    if (classNames.includes("geolibre-plugin-right-panel") || current === root) {
+      applyRightPanelStyle(current, "panel");
+    }
+    if (current.tagName === "FORM") applyRightPanelStyle(current as HTMLElement, "formContainer");
+    if (current.tagName === "SELECT") applyRightPanelStyle(current as HTMLElement, "methodSelect");
+    if (current.tagName === "OPTION") applyRightPanelStyle(current as HTMLElement, "selectOption");
+    if (current.tagName === "INPUT") {
+      const input = current as HTMLInputElement;
+      if (input.type === "range") applyRightPanelStyle(current as HTMLElement, "range");
+      else if (input.type === "checkbox") applyRightPanelStyle(current as HTMLElement, "checkbox");
+      else if (input.type === "radio") applyRightPanelStyle(current as HTMLElement, "radio");
+      else if (classNames.includes("wd-number-input")) applyRightPanelStyle(current as HTMLElement, "wdNumberInput");
+      else if (classNames.includes("spatio-file-input") || classNames.includes("na-file-input") || classNames.includes("plugin-control-input")) applyRightPanelStyle(current as HTMLElement, "input");
+      else applyRightPanelStyle(current as HTMLElement, "input");
+    }
+    if (current.tagName === "BUTTON") {
+      applyRightPanelStyle(current as HTMLElement, "button");
+    }
+    if (classNames.includes("na-layer-list")) applyRightPanelStyle(current as HTMLElement, "layerList");
+    if (classNames.includes("na-layer-card")) applyRightPanelStyle(current as HTMLElement, "layerCard");
+    if (classNames.includes("na-check-label")) applyRightPanelStyle(current as HTMLElement, "checkLabel");
+    if (classNames.includes("na-layer-subform")) applyRightPanelStyle(current as HTMLElement, "layerSubform");
+    if (classNames.includes("wd-slider-control")) applyRightPanelStyle(current as HTMLElement, "wdSliderControl");
+    if (classNames.includes("wd-progress")) applyRightPanelStyle(current as HTMLElement, "wdProgress");
+    if (classNames.includes("na-status") || classNames.includes("plugin-control-status")) applyRightPanelStyle(current as HTMLElement, "status");
+    Array.from(current.children).forEach((child) => queue.push(child as HTMLElement));
+  }
+}

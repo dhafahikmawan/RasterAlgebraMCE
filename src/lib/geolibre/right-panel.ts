@@ -5,7 +5,7 @@ import { buildMceRaster, calculateAhpWeights } from "../SpatioProcessing/mce";
 import type { MceBandMode, MceMissingDataMode } from "../SpatioProcessing/mce";
 import {
   applyRightPanelStyle,
-} from "../styles/right-panel-styles";
+} from "../styles/spazio-right-panel-styles";
 
 /**
  * Set to `false` to hide the Download Result button for end-users.
