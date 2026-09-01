@@ -36,6 +36,13 @@ export const RIGHT_PANEL_STYLES = {
     flexDirection: "column",
     gap: "10px",
   },
+  formRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    width: "100%",
+    boxSizing: "border-box",
+  },
   status: {
     color: "#4b5563",
     fontSize: "12px",
@@ -202,15 +209,55 @@ export const RIGHT_PANEL_STYLES = {
     textAlign: "right",
     flex: "0 0 82px",
   },
-  wdStatsGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" },
-  wdStatItem: { padding: "8px", border: "1px solid #d1d5db", borderRadius: "4px", backgroundColor: "#f9fafb" },
-  wdStatLabel: { display: "block", color: "#6b7280", fontSize: "11px" },
-  wdStatValue: { display: "block", color: "#111827", fontSize: "14px", fontWeight: "600" },
-  wdProgress: { padding: "8px", backgroundColor: "#eff6ff", color: "#1e3a8a", fontSize: "12px" },
-  wdBadge: { display: "inline-block", padding: "3px 8px", borderRadius: "999px", backgroundColor: "#e5e7eb", color: "#374151", fontSize: "11px", fontWeight: "600" },
-  wdBadgeOk: { backgroundColor: "#dcfce7", color: "#166534" },
-  wdBadgeError: { backgroundColor: "#fee2e2", color: "#991b1b" },
-  wdBadgeRunning: { backgroundColor: "#dbeafe", color: "#1e40af" },
+  wdStatsGrid: { 
+    display: "grid", 
+    gridTemplateColumns: "1fr 1fr", 
+    gap: "6px" 
+  },
+  wdStatItem: { 
+    padding: "8px", 
+    border: "1px solid #d1d5db", 
+    borderRadius: "4px", 
+    backgroundColor: "#f9fafb" 
+  },
+  wdStatLabel: { 
+    display: "block", 
+    color: "#6b7280", 
+    fontSize: "11px" 
+  },
+  wdStatValue: { 
+    display: "block", 
+    color: "#111827", 
+    fontSize: "14px", 
+    fontWeight: "600" 
+  },
+  wdProgress: { 
+    padding: "8px", 
+    backgroundColor: "#eff6ff", 
+    color: "#1e3a8a", 
+    fontSize: "12px" 
+  },
+  wdBadge: { 
+    display: "inline-block", 
+    padding: "3px 8px", 
+    borderRadius: "999px", 
+    backgroundColor: "#e5e7eb", 
+    color: "#374151", 
+    fontSize: "11px", 
+    fontWeight: "600" 
+  },
+  wdBadgeOk: { 
+    backgroundColor: "#dcfce7", 
+    color: "#166534" 
+  },
+  wdBadgeError: { 
+    backgroundColor: "#fee2e2", 
+    color: "#991b1b" 
+  },
+  wdBadgeRunning: { 
+    backgroundColor: "#dbeafe", 
+    color: "#1e40af" 
+  },
   rasterList: {
     display: "flex",
     flexDirection: "column",
@@ -360,20 +407,44 @@ export const RIGHT_PANEL_STYLES = {
     flexDirection: "column",
     gap: "4px",
   },
+  flexCol:{
+    display: "flex",
+    flexDirection: "column",
+    gap: "8px",
+    marginTop: "15px",
+  },
+  flexRow:{
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    flexWrap: "wrap",
+  },
+  inputDescription:{
+    color: "#475569",
+    fontSize: "11px",
+    lineHeight: "1.4",
+  },
+  section:{
+    display: "flex",
+    flexDirection: "column",
+    gap: "6px",
+  },
   hidden: { display: "none" },
   visibleFlex: { display: "flex" },
   visibleGrid: { display: "grid" },
 } as const;
 
 const STYLE_CLASS_ALIASES = {
-  panel: "spazio-container",
+  panel: ["geolibre-plugin-right-panel", "spazio-container"],
   heading: "spazio-title",
   description: "spazio-description",
   text: "spazio-text",
   formContainer: "spazio-form-container",
+  formRow: "spazio-form-row",
   status: "spazio-status",
   label: "spazio-input-label",
   input: "spazio-text-field",
+  inputDescription: "spazio-input-description",
   expression: "spazio-expression-field",
   methodSelect: "spazio-dropdown",
   range: "spazio-slider",
@@ -426,6 +497,9 @@ const STYLE_CLASS_ALIASES = {
   hidden: "spazio-hidden",
   visibleFlex: "spazio-visible-flex",
   visibleGrid: "spazio-visible-grid",
+  flexCol: "spazio-flex-col",
+  flexRow: "spazio-flex-row",
+  section: "spazio-section",
 } as const;
 
 export type RightPanelStyleName = keyof typeof RIGHT_PANEL_STYLES;
@@ -435,8 +509,11 @@ export function applyRightPanelStyle(
   styleName: RightPanelStyleName,
 ): void {
   const styles = RIGHT_PANEL_STYLES[styleName];
-  const className = STYLE_CLASS_ALIASES[styleName] ?? `spazio-${String(styleName).replace(/[A-Z]/g, (match) => `-${match.toLowerCase()}`)}`;
-  element.classList.add(className);
+  const alias = STYLE_CLASS_ALIASES[styleName];
+  const classNames = Array.isArray(alias) ? alias : [alias ?? `spazio-${String(styleName).replace(/[A-Z]/g, (match) => `-${match.toLowerCase()}`)}`];
+  for (const className of classNames) {
+    if (className) element.classList.add(className);
+  }
   Object.assign(element.style, styles);
 }
 
@@ -463,17 +540,40 @@ export function styleRightPanelTree(root: HTMLElement): void {
     if (current.tagName === "FORM") applyRightPanelStyle(current as HTMLElement, "formContainer");
     if (current.tagName === "SELECT") applyRightPanelStyle(current as HTMLElement, "methodSelect");
     if (current.tagName === "OPTION") applyRightPanelStyle(current as HTMLElement, "selectOption");
+    if (classNames.includes("na-section")) applyRightPanelStyle(current as HTMLElement, "section");
+    if (classNames.includes("na-form-row")) applyRightPanelStyle(current as HTMLElement, "formRow");
+    if (classNames.includes("na-label")) applyRightPanelStyle(current as HTMLElement, "label");
+    if (classNames.includes("na-radio-group")) applyRightPanelStyle(current as HTMLElement, "averagingGroup");
+    if (classNames.includes("na-radio-label")) applyRightPanelStyle(current as HTMLElement, "radioLabel");
+    if (classNames.includes("na-radio")) applyRightPanelStyle(current as HTMLElement, "radio");
+    if (classNames.includes("na-btn--primary")) applyRightPanelStyle(current as HTMLElement, "operationButton");
+    if (classNames.includes("na-btn--secondary") || classNames.includes("na-pick-btn")) applyRightPanelStyle(current as HTMLElement, "button");
     if (current.tagName === "INPUT") {
       const input = current as HTMLInputElement;
       if (input.type === "range") applyRightPanelStyle(current as HTMLElement, "range");
       else if (input.type === "checkbox") applyRightPanelStyle(current as HTMLElement, "checkbox");
       else if (input.type === "radio") applyRightPanelStyle(current as HTMLElement, "radio");
       else if (classNames.includes("wd-number-input")) applyRightPanelStyle(current as HTMLElement, "wdNumberInput");
-      else if (classNames.includes("spatio-file-input") || classNames.includes("na-file-input") || classNames.includes("plugin-control-input")) applyRightPanelStyle(current as HTMLElement, "input");
+      else if (classNames.includes("spatio-file-input") || classNames.includes("na-file-input") || classNames.includes("plugin-control-input") || classNames.includes("na-input")) applyRightPanelStyle(current as HTMLElement, "input");
       else applyRightPanelStyle(current as HTMLElement, "input");
     }
     if (current.tagName === "BUTTON") {
-      applyRightPanelStyle(current as HTMLElement, "button");
+      if (
+        classNames.includes("na-btn--primary") ||
+        classNames.includes("spazio-submit-button") ||
+        classNames.includes("spatio-submit-button")
+      ) {
+        applyRightPanelStyle(current as HTMLElement, "operationButton");
+      } else if (
+        classNames.includes("na-btn--secondary") ||
+        classNames.includes("na-pick-btn") ||
+        classNames.includes("spazio-button") ||
+        classNames.includes("spatio-button")
+      ) {
+        applyRightPanelStyle(current as HTMLElement, "button");
+      } else {
+        applyRightPanelStyle(current as HTMLElement, "button");
+      }
     }
     if (classNames.includes("na-layer-list")) applyRightPanelStyle(current as HTMLElement, "layerList");
     if (classNames.includes("na-layer-card")) applyRightPanelStyle(current as HTMLElement, "layerCard");

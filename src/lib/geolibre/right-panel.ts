@@ -218,7 +218,7 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
     // ── Calculate button ───────────────────────────────────────────────────
     const calculateBtn = document.createElement('button');
     calculateBtn.type = 'button';
-    applyRightPanelStyle(calculateBtn, "button");
+    applyRightPanelStyle(calculateBtn, "operationButton");
     calculateBtn.textContent = 'Calculate';
     // {lang:id} Kalkulasi
 
@@ -582,7 +582,7 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
 
     const calculateButton = document.createElement("button");
     calculateButton.type = "button";
-    applyRightPanelStyle(calculateButton, "button");
+    applyRightPanelStyle(calculateButton, "operationButton");
     calculateButton.textContent = "Calculate";
     // {lang:id} Hitung
     const downloadLink = document.createElement("a");
