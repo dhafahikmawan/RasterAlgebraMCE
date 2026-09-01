@@ -48,6 +48,7 @@ export function registerTemplateToolbarMenu<TControl extends GeoLibreControl>(
       {
         id: "open-right",
         label: "Open RA & MCE panel",
+        // {lang:id} Buka panel RA & MCE
         // Disable the item on hosts that lack the capability, so it is not a
         // clickable no-op (demonstrates the `disabled` flag + capability check).
         disabled: !app.openRightPanel,
@@ -57,12 +58,14 @@ export function registerTemplateToolbarMenu<TControl extends GeoLibreControl>(
         type: "submenu",
         id: "tools",
         label: "Tools",
+        // {lang:id} Alat-alat
         items: methods,
       },
       { type: "separator" },
       {
         id: "close-panels",
         label: "Close panels",
+        // {lang:id} Tutup panel
         disabled: !app.closeRightPanel && !app.closeFloatingPanel,
         onSelect: () => {
           app.closeRightPanel?.(RIGHT_PANEL_ID);

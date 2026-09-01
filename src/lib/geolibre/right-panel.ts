@@ -106,7 +106,7 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
 
     const boundingRasterLabel = document.createElement('label');
     applyRightPanelStyle(boundingRasterLabel, "label");
-    boundingRasterLabel.textContent = 'Bounding box raster';
+    boundingRasterLabel.textContent = 'Bounding Box Raster';
     const boundingRasterSelector = document.createElement('select');
     boundingRasterSelector.name = 'raster-algebra-bounding-raster';
     applyRightPanelStyle(boundingRasterSelector, "methodSelect");
@@ -117,6 +117,7 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
     const missingDataLabel = document.createElement('label');
     applyRightPanelStyle(missingDataLabel, "label");
     missingDataLabel.textContent = 'Missing data handling';
+    // {lang:id} Pemprosesan data yang tidak ada
     const missingDataSelector = document.createElement('select');
     missingDataSelector.name = 'raster-algebra-missing-data-mode';
     applyRightPanelStyle(missingDataSelector, "methodSelect");
@@ -157,6 +158,7 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
     keyboardToggle.type = 'button';
     applyRightPanelStyle(keyboardToggle, "button");
     keyboardToggle.textContent = 'Open/Close Calculator Keyboard';
+    // {lang:id} Buka/Tutup Keyboard Kalkulator
 
     // ── Operator keyboard grid ─────────────────────────────────────────────
     const operationsContainer = document.createElement('div');
@@ -166,7 +168,8 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
     // ── Expression textarea ────────────────────────────────────────────────
     const expressionLabel = document.createElement('label');
     applyRightPanelStyle(expressionLabel, "label");
-    expressionLabel.textContent = 'Expression';
+    expressionLabel.textContent = 'Calculation Expression';
+    // {lang:id} Ekspresi Kalkulasi
 
     const expressionArea = document.createElement('textarea');
     applyRightPanelStyle(expressionArea, "input");
@@ -215,6 +218,7 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
     calculateBtn.type = 'button';
     applyRightPanelStyle(calculateBtn, "button");
     calculateBtn.textContent = 'Calculate';
+    // {lang:id} Kalkulasi
 
     // ── Download link ──────────────────────────────────────────────────────
     const downloadLink = document.createElement('a');
@@ -297,6 +301,7 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
               ? `Insert ${identity}`
               : `Insert band ${b} from ${identity}`;
           insertBtn.textContent = bandCount === 1 ? 'Insert' : `Band ${b}`;
+          // {lang:id} Masukkan
           insertBtn.setAttribute('aria-label', bandLabel);
           insertBtn.addEventListener('click', () => {
             captureSelection();
@@ -310,6 +315,7 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
         deleteBtn.type = 'button';
         applyRightPanelStyle(deleteBtn, "button");
         deleteBtn.textContent = 'Delete';
+        // {lang:id} Hapus
         deleteBtn.setAttribute('aria-label', `Delete raster ${raster.key}`);
         deleteBtn.addEventListener('click', () => {
           const idx = rasters.indexOf(raster);
@@ -336,9 +342,11 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
       const toLoad = files.slice(0, slots);
       if (toLoad.length === 0) {
         status.textContent = 'Maximum of 5 rasters already loaded.';
+        // {lang:id} Jumlah maksimal raster (5) sudah di load.
         return;
       }
       status.textContent = 'Loading rasters…';
+      // {lang:id} Loading raster-raster...
       Promise.all(toLoad.map((f) => loadRasterFromFile(f)))
         .then((loaded) => {
           loaded.forEach((r) => {
@@ -350,6 +358,7 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
           renderRasterList();
           syncBoundingRasterSelector();
           status.textContent = `${rasters.length} raster(s) loaded.`;
+          // {lang:id} raster loaded
         })
         .catch((err: unknown) => {
           status.textContent = `Error loading raster: ${(err as Error).message}`;
@@ -361,10 +370,12 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
       const exprText = expressionArea.value;
       if (!exprText.trim()) {
         status.textContent = 'Please enter an expression.';
+        // {lang:id} Masukkan ekspresi kalkulasi
         return;
       }
       if (rasters.length === 0) {
         status.textContent = 'Please upload at least one raster.';
+        // {lang:id} Load minimal satu raster
         return;
       }
       let compiled;
@@ -375,6 +386,7 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
         return;
       }
       status.textContent = 'Calculating…';
+      // {lang:id} Melakukan kalkulasi...
       calculateBtn.disabled = true;
       calculateRaster(
         rasters,
@@ -401,9 +413,11 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
           const warningText =
             warnings.length > 0 ? ` Warnings: ${warnings.join(' ')}` : '';
           status.textContent = `Done.${warningText}`;
+          // {lang:id} Selesai
         })
         .catch((err: unknown) => {
           status.textContent = `Calculation error: ${(err as Error).message}`;
+          // {lang:id} Kalkulasi error L
         })
         .finally(() => {
           calculateBtn.disabled = false;
@@ -445,6 +459,7 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
     const countLabel = document.createElement("label");
     applyRightPanelStyle(countLabel, "label");
     countLabel.textContent = "Number of rasters";
+    // {lang:id} Jumlah raster
     const countInput = document.createElement("input");
     countInput.type = "range";
     countInput.min = "1";
@@ -470,6 +485,7 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
     const missingDataLabel = document.createElement("label");
     applyRightPanelStyle(missingDataLabel, "label");
     missingDataLabel.textContent = "Missing data handling";
+    // {lang:id} Pemprosesan data yang tidak ada
     const missingDataSelector = document.createElement("select");
     missingDataSelector.name = "mce-missing-data-mode";
     applyRightPanelStyle(missingDataSelector, "methodSelect");
@@ -524,6 +540,7 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
     const bandLegend = document.createElement("legend");
     applyRightPanelStyle(bandLegend, "legend");
     bandLegend.textContent = "Band processing";
+    // {lang:id} Pemprosesan Band
     bandGroup.appendChild(bandLegend);
     ([
       ["first", "Process only the first band"],
@@ -550,6 +567,7 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
     const averagingGroup = document.createElement("label");
     applyRightPanelStyle(averagingGroup, "averagingGroup");
     averagingGroup.textContent = "Average bands";
+    // {lang:id} Menghitung rata-rata semua band
     const averagingMode = document.createElement("select");
     drawDropdownOptions(averagingMode, ["before", "after"], ["Before normalization", "After normalization"]);
     applyRightPanelStyle(averagingMode, "methodSelect");
@@ -560,9 +578,10 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
     calculateButton.type = "button";
     applyRightPanelStyle(calculateButton, "button");
     calculateButton.textContent = "Calculate";
+    // {lang:id} Hitung
     const downloadLink = document.createElement("a");
     applyRightPanelStyle(downloadLink, "downloadButton");
-    downloadLink.textContent = "Download MCE raster";
+    downloadLink.textContent = "Download MCE Raster";
     downloadLink.download = "mce-raster.tif";
     downloadLink.setAttribute("aria-disabled", "true");
     if (!ENABLE_DOWNLOAD) setRightPanelVisibility(downloadLink, "hidden");
@@ -637,6 +656,7 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
       applyRightPanelStyle(calculateAhp, "button");
       applyRightPanelStyle(calculateAhp, "ahpButton");
       calculateAhp.textContent = "Calculate AHP Weights";
+      // {lang:id} Hitung Bobot AHP
       calculateAhp.addEventListener("click", () => {
         const weights = calculateAhpWeights(ahpMatrix);
         weights.forEach((weight, index) => {
@@ -715,9 +735,11 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
       const entries = inputs.map((input) => ({ file: input.file, weight: Number(input.weight) }));
       if (entries.some((entry) => !entry.file || !Number.isFinite(entry.weight))) {
         status.textContent = "Please provide a valid file and weight for each raster.";
+        // {lang:id} Harap memberikan file dan bobot yang valid untuk setiap raster
         return;
       }
       status.textContent = "Preparing MCE raster…";
+      // {lang:id} Menyiapkan raster MCE...
       calculateButton.disabled = true;
       try {
         const blob = await buildMceRaster(entries as Array<{ file: File; weight: number }>, {
@@ -733,8 +755,10 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
           downloadLink.setAttribute("aria-disabled", "false");
         }
         status.textContent = "MCE raster generated successfully.";
+        // {lang:id} Raster MCE berhasil dibuat
       } catch (error) {
         status.textContent = `Processing failed: ${(error as Error).message}`;
+        // {lang:id} Pemprosesan gagal: 
       } finally {
         updateCalculateState();
       }
@@ -781,6 +805,7 @@ export function registerTemplateRightPanel<TControl extends GeoLibreControl>(
       const heading = document.createElement("h2");
       applyRightPanelStyle(heading, "heading");
       heading.textContent = "Raster Algebra & MCE Workbench";
+      // {lang:id} Workbench Raster Algebra & MCE
 
       //Method Select
       const method = document.createElement("select");
