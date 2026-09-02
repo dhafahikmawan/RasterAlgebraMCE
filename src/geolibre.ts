@@ -68,9 +68,9 @@ function isPluginState(value: unknown): value is Partial<PluginState> {
   return true;
 }
 
-export const spatioRasterAlgebraMCE: GeoLibrePlugin<PluginControl> = {
-  id: "spatio-raster-algebra-mce",
-  name: "Spatio Raster Algebra and MCE",
+export const spazioRasterAlgebraMCE: GeoLibrePlugin<PluginControl> = {
+  id: "spazio-raster-algebra-mce",
+  name: "Spazio Raster Algebra and MCE",
   version: "0.1.0",
   urlParameterNames: [PLUGIN_DATA_PARAM],
   activate(app) {
@@ -131,4 +131,4 @@ export const spatioRasterAlgebraMCE: GeoLibrePlugin<PluginControl> = {
   },
 };
 
-export default spatioRasterAlgebraMCE;
+export default spazioRasterAlgebraMCE;

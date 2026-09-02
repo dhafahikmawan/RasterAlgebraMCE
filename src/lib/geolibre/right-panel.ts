@@ -1,8 +1,8 @@
 import type { GeoLibreAppAPI, GeoLibreControl } from "./host-api";
-import { loadRasterFromFile, compileExpression, calculateRaster } from "../SpatioProcessing/raster-algebra";
-import type { RasterInput } from "../SpatioProcessing/raster-algebra";
-import { buildMceRaster, calculateAhpWeights } from "../SpatioProcessing/mce";
-import type { MceBandMode, MceMissingDataMode } from "../SpatioProcessing/mce";
+import { loadRasterFromFile, compileExpression, calculateRaster } from "../SpazioProcessing/raster-algebra";
+import type { RasterInput } from "../SpazioProcessing/raster-algebra";
+import { buildMceRaster, calculateAhpWeights } from "../SpazioProcessing/mce";
+import type { MceBandMode, MceMissingDataMode } from "../SpazioProcessing/mce";
 import {
   applyRightPanelStyle,
 } from "../styles/spazio-right-panel-styles";
@@ -30,7 +30,7 @@ export const ENABLE_DOWNLOAD = true;
  */
 
 /** Stable id for this plugin's right panel. Replace with your own. */
-export const RIGHT_PANEL_ID = "spatio-ra-mce-panel";
+export const RIGHT_PANEL_ID = "spazio-ra-mce-panel";
 export const BASE_METHODS = ["", "Raster Algebra", "Multi Criteria Evaluation"];
 // {lang:id} Workbench Raster Algebra & MCE ["", "Aljabar Raster", "Evaluasi Beberapa Kriteria"]
 export const BASE_METHODS_TC = ["Select Processing Function", "Raster Algebra", "Multi Criteria Evaluation"];
