@@ -356,6 +356,17 @@ export const RIGHT_PANEL_STYLES = {
     borderRadius: "4px",
     font: "inherit",
   },
+  ahpField: {
+    boxSizing: "border-box",
+    width: "72px",
+    minHeight: "32px",
+    padding: "6px",
+    color: "#111827",
+    backgroundColor: "#ffffff",
+    border: "1px solid #b8c1cc",
+    borderRadius: "4px",
+    font: "inherit",
+  },
   ahpInputDisabled: {
     backgroundColor: "#e2e8f0",
     color: "#64748b",
@@ -432,6 +443,41 @@ export const RIGHT_PANEL_STYLES = {
   hidden: { display: "none" },
   visibleFlex: { display: "flex" },
   visibleGrid: { display: "grid" },
+  fileField: {
+    boxSizing: "border-box",
+    width: "100%",
+    minHeight: "36px",
+    padding: "6px 10px",
+    border: "1px solid #b8c1cc",
+    borderRadius: "4px",
+    outline: "none",
+    backgroundColor: "#ffffff",
+    color: "#111827",
+    fontSize: "13px",
+    fontFamily: "inherit",
+  },
+  calculatorButton: {
+    boxSizing: "border-box",
+    minHeight: "32px",
+    padding: "6px 10px",
+    border: "1px solid #6b7280",
+    borderRadius: "4px",
+    backgroundColor: "#f3f4f6",
+    color: "#111827",
+    cursor: "pointer",
+    fontSize: "13px",
+    fontWeight: "500",
+  },
+  statusError: {
+    color: "#b91c1c",
+    fontSize: "12px",
+    overflowWrap: "break-word",
+  },
+  downloads: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "8px",
+  },
 } as const;
 
 const STYLE_CLASS_ALIASES = {
@@ -500,6 +546,11 @@ const STYLE_CLASS_ALIASES = {
   flexCol: "spazio-flex-col",
   flexRow: "spazio-flex-row",
   section: "spazio-section",
+  fileField: "spazio-file-field",
+  calculatorButton: "spazio-calculator-button",
+  statusError: "spazio-status-error",
+  downloads: "spazio-downloads",
+  ahpField: ["spazio-ahp-field", "spazio-ahp-input"],
 } as const;
 
 export type RightPanelStyleName = keyof typeof RIGHT_PANEL_STYLES;
@@ -515,6 +566,43 @@ export function applyRightPanelStyle(
     if (className) element.classList.add(className);
   }
   Object.assign(element.style, styles);
+}
+
+export function applySpazioRightPanelStyles<T extends HTMLElement>(
+  element: T,
+  className: string,
+): T {
+  const legacyStyleKeyMap: Record<string, RightPanelStyleName> = {
+    "spazio-container": "panel",
+    "spazio-title": "heading",
+    "spazio-description": "description",
+    "spazio-input-label": "label",
+    "spazio-input-description": "inputDescription",
+    "spazio-dropdown": "methodSelect",
+    "spazio-dropdown-options": "selectOption",
+    "spazio-text-field": "input",
+    "spazio-file-field": "fileField",
+    "spazio-submit-button": "operationButton",
+    "spazio-button": "button",
+    "spazio-expression-field": "expression",
+    "spazio-calculator-button": "calculatorButton",
+    "spazio-ahp-table": "table",
+    "spazio-ahp-field": "ahpField",
+    "spazio-ahp-headers": "tableHeader",
+    "spazio-status": "status",
+    "spazio-form-container": "formContainer",
+    "spazio-slider": "range",
+    "spazio-checkbox": "checkbox",
+  };
+
+  const mappedStyle = legacyStyleKeyMap[className];
+  if (mappedStyle) {
+    applyRightPanelStyle(element, mappedStyle);
+    return element;
+  }
+
+  element.classList.add(className);
+  return element;
 }
 
 export function applyRightPanelStyles(

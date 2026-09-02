@@ -118,8 +118,8 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
 
     const missingDataLabel = document.createElement('label');
     applyRightPanelStyle(missingDataLabel, "label");
-    missingDataLabel.textContent = 'Missing data handling';
-    // {lang:id} Pemprosesan data yang tidak ada
+    missingDataLabel.textContent = 'Bounding Box Missing data handling';
+    // {lang:id} Pemprosesan data yang tidak ada pada Bounding Box
     const missingDataSelector = document.createElement('select');
     missingDataSelector.name = 'raster-algebra-missing-data-mode';
     applyRightPanelStyle(missingDataSelector, "methodSelect");
@@ -486,7 +486,7 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
     });
     const missingDataLabel = document.createElement("label");
     applyRightPanelStyle(missingDataLabel, "label");
-    missingDataLabel.textContent = "Missing data handling";
+    missingDataLabel.textContent = "Bounding Box Missing data handling";
     // {lang:id} Pemprosesan data yang tidak ada
     const missingDataSelector = document.createElement("select");
     missingDataSelector.name = "mce-missing-data-mode";
