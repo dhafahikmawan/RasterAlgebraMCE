@@ -1,4 +1,17 @@
+import { RIGHT_PANEL_DARK_STYLES } from "./spazio-right-panel-dark";
+
 export type RightPanelStyle = Partial<CSSStyleDeclaration>;
+
+export type ThemeMode = "light" | "dark";
+let currentTheme: ThemeMode = "dark";
+
+export function setRightPanelTheme(theme: ThemeMode): void {
+  currentTheme = theme;
+}
+
+export function getRightPanelTheme(): ThemeMode {
+  return currentTheme;
+}
 
 export const RIGHT_PANEL_STYLES = {
   panel: {
@@ -7,6 +20,10 @@ export const RIGHT_PANEL_STYLES = {
     gap: "12px",
     boxSizing: "border-box",
     padding: "16px",
+    width: "100%",
+    minHeight: "100%",
+    height: "100%",
+    overflowY: "auto",
     backgroundColor: "#ffffff",
     color: "#111827",
     border: "1px solid #d1d5db",
@@ -121,10 +138,10 @@ export const RIGHT_PANEL_STYLES = {
     boxSizing: "border-box",
     minHeight: "36px",
     padding: "8px 14px",
-    border: "1px solid #6b7280",
+    border: "1px solid #cbd5e1",
     borderRadius: "4px",
-    backgroundColor: "#4b5563",
-    color: "#ffffff",
+    backgroundColor: "#e2e8f0 ",
+    color: "#1e293b",
     cursor: "pointer",
     fontSize: "14px",
     fontWeight: "500",
@@ -558,8 +575,9 @@ export type RightPanelStyleName = keyof typeof RIGHT_PANEL_STYLES;
 export function applyRightPanelStyle(
   element: HTMLElement,
   styleName: RightPanelStyleName,
+  theme: ThemeMode = currentTheme,
 ): void {
-  const styles = RIGHT_PANEL_STYLES[styleName];
+  const styles = theme === "dark" ? RIGHT_PANEL_DARK_STYLES[styleName] : RIGHT_PANEL_STYLES[styleName];
   const alias = STYLE_CLASS_ALIASES[styleName];
   const classNames = Array.isArray(alias) ? alias : [alias ?? `spazio-${String(styleName).replace(/[A-Z]/g, (match) => `-${match.toLowerCase()}`)}`];
   for (const className of classNames) {
@@ -617,59 +635,130 @@ export function applyRightPanelStyles(
   }
 }
 
-export function styleRightPanelTree(root: HTMLElement): void {
+export function styleRightPanelTree(root: HTMLElement, theme: ThemeMode = currentTheme): void {
   const queue = [root];
   while (queue.length) {
     const current = queue.shift()!;
     const classNames = current.className ? String(current.className).split(/\s+/).filter(Boolean) : [];
+
+    // Panel wrapper
     if (classNames.includes("geolibre-plugin-right-panel") || current === root) {
-      applyRightPanelStyle(current, "panel");
+      applyRightPanelStyle(current, "panel", theme);
     }
-    if (current.tagName === "FORM") applyRightPanelStyle(current as HTMLElement, "formContainer");
-    if (current.tagName === "SELECT") applyRightPanelStyle(current as HTMLElement, "methodSelect");
-    if (current.tagName === "OPTION") applyRightPanelStyle(current as HTMLElement, "selectOption");
-    if (classNames.includes("na-section")) applyRightPanelStyle(current as HTMLElement, "section");
-    if (classNames.includes("na-form-row")) applyRightPanelStyle(current as HTMLElement, "formRow");
-    if (classNames.includes("na-label")) applyRightPanelStyle(current as HTMLElement, "label");
-    if (classNames.includes("na-radio-group")) applyRightPanelStyle(current as HTMLElement, "averagingGroup");
-    if (classNames.includes("na-radio-label")) applyRightPanelStyle(current as HTMLElement, "radioLabel");
-    if (classNames.includes("na-radio")) applyRightPanelStyle(current as HTMLElement, "radio");
-    if (classNames.includes("na-btn--primary")) applyRightPanelStyle(current as HTMLElement, "operationButton");
-    if (classNames.includes("na-btn--secondary") || classNames.includes("na-pick-btn")) applyRightPanelStyle(current as HTMLElement, "button");
+
+    // Heading / text
+    if (classNames.includes("spazio-title")) applyRightPanelStyle(current as HTMLElement, "heading", theme);
+    if (classNames.includes("spazio-description")) applyRightPanelStyle(current as HTMLElement, "description", theme);
+    if (classNames.includes("spazio-text")) applyRightPanelStyle(current as HTMLElement, "text", theme);
+    if (classNames.includes("spazio-output")) applyRightPanelStyle(current as HTMLElement, "output", theme);
+
+    // Status
+    if (classNames.includes("spazio-status") || classNames.includes("na-status") || classNames.includes("plugin-control-status")) applyRightPanelStyle(current as HTMLElement, "status", theme);
+    if (classNames.includes("spazio-status-error")) applyRightPanelStyle(current as HTMLElement, "statusError", theme);
+
+    // Form structure
+    if (current.tagName === "FORM" || classNames.includes("spazio-form-container")) applyRightPanelStyle(current as HTMLElement, "formContainer", theme);
+    if (classNames.includes("spazio-form-row") || classNames.includes("na-form-row")) applyRightPanelStyle(current as HTMLElement, "formRow", theme);
+    if (classNames.includes("spazio-section") || classNames.includes("na-section")) applyRightPanelStyle(current as HTMLElement, "section", theme);
+    if (classNames.includes("spazio-flex-col")) applyRightPanelStyle(current as HTMLElement, "flexCol", theme);
+    if (classNames.includes("spazio-flex-row")) applyRightPanelStyle(current as HTMLElement, "flexRow", theme);
+
+    // Labels
+    if (classNames.includes("spazio-input-label") || classNames.includes("na-label")) applyRightPanelStyle(current as HTMLElement, "label", theme);
+    if (classNames.includes("spazio-input-description")) applyRightPanelStyle(current as HTMLElement, "inputDescription", theme);
+
+    // Selects / options
+    if (current.tagName === "SELECT" || classNames.includes("spazio-dropdown")) applyRightPanelStyle(current as HTMLElement, "methodSelect", theme);
+    if (current.tagName === "OPTION" || classNames.includes("spazio-dropdown-options")) applyRightPanelStyle(current as HTMLElement, "selectOption", theme);
+
+    // Inputs
     if (current.tagName === "INPUT") {
       const input = current as HTMLInputElement;
-      if (input.type === "range") applyRightPanelStyle(current as HTMLElement, "range");
-      else if (input.type === "checkbox") applyRightPanelStyle(current as HTMLElement, "checkbox");
-      else if (input.type === "radio") applyRightPanelStyle(current as HTMLElement, "radio");
-      else if (classNames.includes("wd-number-input")) applyRightPanelStyle(current as HTMLElement, "wdNumberInput");
-      else if (classNames.includes("spatio-file-input") || classNames.includes("na-file-input") || classNames.includes("plugin-control-input") || classNames.includes("na-input")) applyRightPanelStyle(current as HTMLElement, "input");
-      else applyRightPanelStyle(current as HTMLElement, "input");
+      if (input.type === "range" || classNames.includes("spazio-slider")) applyRightPanelStyle(current as HTMLElement, "range", theme);
+      else if (input.type === "checkbox" || classNames.includes("spazio-checkbox")) applyRightPanelStyle(current as HTMLElement, "checkbox", theme);
+      else if (input.type === "radio" || classNames.includes("spazio-radio")) applyRightPanelStyle(current as HTMLElement, "radio", theme);
+      else if (classNames.includes("wd-number-input") || classNames.includes("spazio-wd-number-input")) applyRightPanelStyle(current as HTMLElement, "wdNumberInput", theme);
+      else if (classNames.includes("spazio-text-field") || classNames.includes("spatio-file-input") || classNames.includes("na-file-input") || classNames.includes("plugin-control-input") || classNames.includes("na-input")) applyRightPanelStyle(current as HTMLElement, "input", theme);
+      else applyRightPanelStyle(current as HTMLElement, "input", theme);
     }
-    if (current.tagName === "BUTTON") {
+    if (classNames.includes("spazio-file-field")) applyRightPanelStyle(current as HTMLElement, "fileField", theme);
+    if (classNames.includes("spazio-expression-field")) applyRightPanelStyle(current as HTMLElement, "expression", theme);
+
+    // Buttons
+    if (current.tagName === "BUTTON" || classNames.includes("spazio-button") || classNames.includes("spazio-submit-button")) {
       if (
         classNames.includes("na-btn--primary") ||
         classNames.includes("spazio-submit-button") ||
         classNames.includes("spatio-submit-button")
       ) {
-        applyRightPanelStyle(current as HTMLElement, "operationButton");
-      } else if (
-        classNames.includes("na-btn--secondary") ||
-        classNames.includes("na-pick-btn") ||
-        classNames.includes("spazio-button") ||
-        classNames.includes("spatio-button")
-      ) {
-        applyRightPanelStyle(current as HTMLElement, "button");
+        applyRightPanelStyle(current as HTMLElement, "operationButton", theme);
       } else {
-        applyRightPanelStyle(current as HTMLElement, "button");
+        applyRightPanelStyle(current as HTMLElement, "button", theme);
       }
     }
-    if (classNames.includes("na-layer-list")) applyRightPanelStyle(current as HTMLElement, "layerList");
-    if (classNames.includes("na-layer-card")) applyRightPanelStyle(current as HTMLElement, "layerCard");
-    if (classNames.includes("na-check-label")) applyRightPanelStyle(current as HTMLElement, "checkLabel");
-    if (classNames.includes("na-layer-subform")) applyRightPanelStyle(current as HTMLElement, "layerSubform");
-    if (classNames.includes("wd-slider-control")) applyRightPanelStyle(current as HTMLElement, "wdSliderControl");
-    if (classNames.includes("wd-progress")) applyRightPanelStyle(current as HTMLElement, "wdProgress");
-    if (classNames.includes("na-status") || classNames.includes("plugin-control-status")) applyRightPanelStyle(current as HTMLElement, "status");
+    if (classNames.includes("na-btn--primary")) applyRightPanelStyle(current as HTMLElement, "operationButton", theme);
+    if (classNames.includes("na-btn--secondary") || classNames.includes("na-pick-btn")) applyRightPanelStyle(current as HTMLElement, "button", theme);
+    if (classNames.includes("spazio-calculator-button")) applyRightPanelStyle(current as HTMLElement, "calculatorButton", theme);
+
+    // Layer list
+    if (classNames.includes("spazio-layer-list") || classNames.includes("na-layer-list")) applyRightPanelStyle(current as HTMLElement, "layerList", theme);
+    if (classNames.includes("spazio-layer-card") || classNames.includes("na-layer-card")) applyRightPanelStyle(current as HTMLElement, "layerCard", theme);
+    if (classNames.includes("spazio-check-label") || classNames.includes("na-check-label")) applyRightPanelStyle(current as HTMLElement, "checkLabel", theme);
+    if (classNames.includes("spazio-layer-subform") || classNames.includes("na-layer-subform")) applyRightPanelStyle(current as HTMLElement, "layerSubform", theme);
+
+    // Radio / fieldset
+    if (classNames.includes("spazio-averaging-group") || classNames.includes("na-radio-group")) applyRightPanelStyle(current as HTMLElement, "averagingGroup", theme);
+    if (classNames.includes("spazio-radio-label") || classNames.includes("na-radio-label")) applyRightPanelStyle(current as HTMLElement, "radioLabel", theme);
+    if (classNames.includes("na-radio")) applyRightPanelStyle(current as HTMLElement, "radio", theme);
+    if (classNames.includes("spazio-fieldset")) applyRightPanelStyle(current as HTMLElement, "fieldset", theme);
+    if (classNames.includes("spazio-legend")) applyRightPanelStyle(current as HTMLElement, "legend", theme);
+
+    // WD widgets
+    if (classNames.includes("spazio-wd-slider-control") || classNames.includes("wd-slider-control")) applyRightPanelStyle(current as HTMLElement, "wdSliderControl", theme);
+    if (classNames.includes("spazio-wd-progress") || classNames.includes("wd-progress")) applyRightPanelStyle(current as HTMLElement, "wdProgress", theme);
+    if (classNames.includes("spazio-wd-stats-grid")) applyRightPanelStyle(current as HTMLElement, "wdStatsGrid", theme);
+    if (classNames.includes("spazio-wd-stat-item")) applyRightPanelStyle(current as HTMLElement, "wdStatItem", theme);
+    if (classNames.includes("spazio-wd-stat-label")) applyRightPanelStyle(current as HTMLElement, "wdStatLabel", theme);
+    if (classNames.includes("spazio-wd-stat-value")) applyRightPanelStyle(current as HTMLElement, "wdStatValue", theme);
+    if (classNames.includes("spazio-wd-badge")) applyRightPanelStyle(current as HTMLElement, "wdBadge", theme);
+    if (classNames.includes("spazio-wd-badge-ok")) applyRightPanelStyle(current as HTMLElement, "wdBadgeOk", theme);
+    if (classNames.includes("spazio-wd-badge-error")) applyRightPanelStyle(current as HTMLElement, "wdBadgeError", theme);
+    if (classNames.includes("spazio-wd-badge-running")) applyRightPanelStyle(current as HTMLElement, "wdBadgeRunning", theme);
+
+    // Raster
+    if (classNames.includes("spazio-raster-list")) applyRightPanelStyle(current as HTMLElement, "rasterList", theme);
+    if (classNames.includes("spazio-raster-row")) applyRightPanelStyle(current as HTMLElement, "rasterRow", theme);
+    if (classNames.includes("spazio-raster-controls")) applyRightPanelStyle(current as HTMLElement, "rasterControls", theme);
+    if (classNames.includes("spazio-raster-bands")) applyRightPanelStyle(current as HTMLElement, "rasterBands", theme);
+
+    // Operations
+    if (classNames.includes("spazio-operations")) applyRightPanelStyle(current as HTMLElement, "operations", theme);
+    if (classNames.includes("spazio-operations-grid")) applyRightPanelStyle(current as HTMLElement, "operationsGrid", theme);
+    if (classNames.includes("spazio-operation-row")) applyRightPanelStyle(current as HTMLElement, "operationRow", theme);
+    if (classNames.includes("spazio-count-group")) applyRightPanelStyle(current as HTMLElement, "countGroup", theme);
+
+    // MCE
+    if (classNames.includes("spazio-mce-rows")) applyRightPanelStyle(current as HTMLElement, "mceRows", theme);
+    if (classNames.includes("spazio-mce-row")) applyRightPanelStyle(current as HTMLElement, "mceRow", theme);
+    if (classNames.includes("spazio-mce-weight-input")) applyRightPanelStyle(current as HTMLElement, "mceWeightInput", theme);
+
+    // AHP
+    if (classNames.includes("spazio-ahp-label")) applyRightPanelStyle(current as HTMLElement, "ahpLabel", theme);
+    if (classNames.includes("spazio-ahp-container")) applyRightPanelStyle(current as HTMLElement, "ahpContainer", theme);
+    if (classNames.includes("spazio-ahp-input")) applyRightPanelStyle(current as HTMLElement, "ahpInput", theme);
+    if (classNames.includes("spazio-ahp-field")) applyRightPanelStyle(current as HTMLElement, "ahpField", theme);
+    if (classNames.includes("spazio-ahp-input-disabled")) applyRightPanelStyle(current as HTMLElement, "ahpInputDisabled", theme);
+    if (classNames.includes("spazio-ahp-button")) applyRightPanelStyle(current as HTMLElement, "ahpButton", theme);
+
+    // Table
+    if (classNames.includes("spazio-ahp-table")) applyRightPanelStyle(current as HTMLElement, "table", theme);
+    if (classNames.includes("spazio-ahp-table-row")) applyRightPanelStyle(current as HTMLElement, "tableRow", theme);
+    if (classNames.includes("spazio-ahp-headers")) applyRightPanelStyle(current as HTMLElement, "tableHeader", theme);
+    if (classNames.includes("spazio-ahp-cell")) applyRightPanelStyle(current as HTMLElement, "tableCell", theme);
+
+    // Downloads
+    if (classNames.includes("spazio-downloads")) applyRightPanelStyle(current as HTMLElement, "downloads", theme);
+
     Array.from(current.children).forEach((child) => queue.push(child as HTMLElement));
   }
 }

@@ -3,9 +3,7 @@ import { loadRasterFromFile, compileExpression, calculateRaster } from "../Spazi
 import type { RasterInput } from "../SpazioProcessing/raster-algebra";
 import { buildMceRaster, calculateAhpWeights } from "../SpazioProcessing/mce";
 import type { MceBandMode, MceMissingDataMode } from "../SpazioProcessing/mce";
-import {
-  applyRightPanelStyle,
-} from "../styles/spazio-right-panel-styles";
+import { applyRightPanelStyle, getRightPanelTheme, setRightPanelTheme, styleRightPanelTree } from "../styles/spazio-right-panel-styles";
 
 /**
  * Set to `false` to hide the Download Result button for end-users.
@@ -803,16 +801,46 @@ export function registerTemplateRightPanel<TControl extends GeoLibreControl>(
     title: "RA & MCE",
     defaultWidth: 320,
     render(container) {
+      // Ensure container enables 100% height filling
+      container.style.height = "100%";
+      container.style.boxSizing = "border-box";
       //Wrapper
       const wrap = document.createElement("div");
       applyRightPanelStyle(wrap, "panel");
+
+      // Header bar with heading + theme toggle
+      const headerContainer = document.createElement("div");
+      headerContainer.style.display = "flex";
+      headerContainer.style.alignItems = "center";
+      headerContainer.style.justifyContent = "space-between";
+      headerContainer.style.width = "100%";
 
       //Description
       const heading = document.createElement("h2");
       applyRightPanelStyle(heading, "heading");
       heading.textContent = "Raster Algebra & MCE Workbench";
       // {lang:id} Workbench Raster Algebra & MCE
+      const themeToggle = document.createElement("button");
+      applyRightPanelStyle(themeToggle, "button");
+      themeToggle.type = "button";
+      themeToggle.style.minHeight = "28px";
+      themeToggle.style.padding = "4px 8px";
+      themeToggle.style.fontSize = "12px";
+      themeToggle.style.display = "inline-flex";
+      themeToggle.style.alignItems = "center";
+      themeToggle.style.gap = "4px";
+      themeToggle.textContent = getRightPanelTheme() === "dark" ? "☀️ Light" : "🌙 Dark";
+      themeToggle.setAttribute("aria-label", "Toggle dark/light mode");
 
+      themeToggle.addEventListener("click", () => {
+        const nextTheme = getRightPanelTheme() === "light" ? "dark" : "light";
+        setRightPanelTheme(nextTheme);
+        themeToggle.textContent = nextTheme === "dark" ? "☀️ Light" : "🌙 Dark";
+        styleRightPanelTree(wrap, nextTheme);
+        applyRightPanelStyle(themeToggle, "button", nextTheme);
+      });
+
+      headerContainer.append(heading, themeToggle);
       //Method Select
       const method = document.createElement("select");
       applyRightPanelStyle(method, "methodSelect");
@@ -826,7 +854,7 @@ export function registerTemplateRightPanel<TControl extends GeoLibreControl>(
       const body = document.createElement("p");
       applyRightPanelStyle(body, "description");
 
-      wrap.append(heading, body, method, methodFormContainer);
+      wrap.append(headerContainer, body, method, methodFormContainer);
       container.appendChild(wrap);
 
       //Event: Method selected
